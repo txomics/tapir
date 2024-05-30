@@ -1,0 +1,13 @@
+# Exploratory data analysis
+
+How can we explore transcript expression from long read data...
+
+Let's load some data...
+
+Which transcripts belong to which genes...
+
+Filtering...
+
+Visualize expression patterns for a particular gene
+
+How to look across many genes?

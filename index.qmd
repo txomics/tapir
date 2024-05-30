@@ -1,3 +1,5 @@
-# TAPIR: Transcript analysis pipelines in R {.unnumbered}
+# Book contents {.unnumbered}
 
 This is where the good stuff goes.
+
+Maybe a description of the major sections...

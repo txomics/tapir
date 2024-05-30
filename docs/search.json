@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "TAPIR: Transcript analysis pipelines in R",
     "section": "",
-    "text": "TAPIR: Transcript analysis pipelines in R\nThis is where the good stuff goes."
+    "text": "Book contents\nThis is where the good stuff goes.\nMaybe a description of the major sections…"
   },
   {
     "objectID": "intro.html",
@@ -26,5 +26,12 @@
     "title": "References",
     "section": "",
     "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97."
+  },
+  {
+    "objectID": "eda.html",
+    "href": "eda.html",
+    "title": "2  Exploratory data analysis",
+    "section": "",
+    "text": "How can we explore transcript expression from long read data…\nLet’s load some data…\nWhich transcripts belong to which genes…\nFiltering…\nVisualize expression patterns for a particular gene\nHow to look across many genes?"
   }
 ]
