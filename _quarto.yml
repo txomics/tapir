@@ -1,0 +1,23 @@
+project:
+  type: book
+
+book:
+  title: "TAPIR: Transcript analysis pipelines in R"
+  author: "The team"
+  date: "5/29/2024"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+
