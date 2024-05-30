@@ -1,5 +1,6 @@
 project:
   type: book
+  output-dir: docs
 
 book:
   title: "TAPIR: Transcript analysis pipelines in R"
