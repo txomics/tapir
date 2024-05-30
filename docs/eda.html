@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -152,6 +186,111 @@ ul.task-list li input[type="checkbox"] {
 
 <p>How can we explore transcript expression from long read data…</p>
 <p>Let’s load some data…</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at /Users/milove/bioc/tapir</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://github.com/gandallab/Dev_Brain_IsoSeq/raw/main/data/cp_vz_0.75_min_7_recovery_talon_abundance_filtered.tsv.gz"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>filename <span class="ot">&lt;-</span> <span class="fu">basename</span>(url)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>,filename)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(path)) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(url, path)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'readr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:testthat':
+
+    edition_get, local_edition</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="ot">&lt;-</span> <span class="fu">read.delim</span>(path)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 214516     35</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"         "annot_transcript_id"  
+ [5] "annot_gene_name"       "annot_transcript_name" "n_exons"               "length"               
+ [9] "gene_novelty"          "transcript_novelty"    "ISM_subtype"           "X209_1_VZ"            
+[13] "X209_2_VZ"             "X209_3_VZ"             "X209_4_VZ"             "X334_1_VZ"            
+[17] "X334_2_VZ"             "X334_3_VZ"             "X334_4_VZ"             "X336_1_VZ"            
+[21] "X336_2_VZ"             "X336_3_VZ"             "X336_4_VZ"             "X334_1_CP"            
+[25] "X334_2_CP"             "X334_3_CP"             "X334_4_CP"             "X209_1_CP"            
+[29] "X209_2_CP"             "X209_3_CP"             "X209_4_CP"             "X336_1_CP"            
+[33] "X336_2_CP"             "X336_3_CP"             "X336_4_CP"            </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  gene_ID transcript_ID       annot_gene_id annot_transcript_id annot_gene_name
+1      12            21 ENSG00000268903.1_5 ENST00000494149.2_2      AL627309.6
+2      18            34   ENSG00000228463.4   ENST00000424587.2      AP006222.2
+3      22            39   ENSG00000224813.2   ENST00000445840.1    RP4-669L17.4
+4      32            65 ENSG00000225630.1_4 ENST00000457540.1_1        MTND2P28
+5      33            66 ENSG00000237973.1_4 ENST00000414273.1_1        MTCO1P12
+  annot_transcript_name n_exons length gene_novelty transcript_novelty ISM_subtype X209_1_VZ
+1        AL627309.6-201       1    755        Known              Known        None         0
+2        AP006222.2-001       4   2257        Known              Known        None         0
+3      RP4-669L17.4-001       1    180        Known              Known        None         0
+4          MTND2P28-201       1   1044        Known              Known        None         0
+5          MTCO1P12-201       1   1543        Known              Known        None         0
+  X209_2_VZ X209_3_VZ X209_4_VZ
+1         0         0         0
+2         0         0         0
+3         1         0         0
+4         0         0         0
+5         0         0         0</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:testthat':
+
+    matches</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'tidyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:testthat':
+
+    matches</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">"X"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">everything</span>(), sum))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  X209_1_VZ X209_2_VZ X209_3_VZ X209_4_VZ X334_1_VZ X334_2_VZ X334_3_VZ X334_4_VZ X336_1_VZ
+1    623608    542318    501999    529527   1273843   1594927   1160553   1546123   1328077
+  X336_2_VZ X336_3_VZ X336_4_VZ X334_1_CP X334_2_CP X334_3_CP X334_4_CP X209_1_CP X209_2_CP
+1    839389    924697   1323952   1164272   1432399   1048315   1426825   1315540   1198841
+  X209_3_CP X209_4_CP X336_1_CP X336_2_CP X336_3_CP X336_4_CP
+1   1107317   1144579   1328355    840493    927913   1328862</code></pre>
+</div>
+</div>
 <p>Which transcripts belong to which genes…</p>
 <p>Filtering…</p>
 <p>Visualize expression patterns for a particular gene</p>

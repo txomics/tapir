@@ -4,6 +4,32 @@ How can we explore transcript expression from long read data...
 
 Let's load some data...
 
+```{r}
+library(here)
+url <- "https://github.com/gandallab/Dev_Brain_IsoSeq/raw/main/data/cp_vz_0.75_min_7_recovery_talon_abundance_filtered.tsv.gz"
+filename <- basename(url)
+path <- here("data",filename)
+if (!file.exists(path)) {
+  download.file(url, path)
+}
+```
+
+```{r}
+library(readr)
+raw_abundance_table <- read.delim(path)
+dim(raw_abundance_table)
+colnames(raw_abundance_table)
+raw_abundance_table[1:5,1:15]
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+raw_abundance_table |>
+  select(starts_with("X")) |>
+  summarize(across(everything(), sum))
+```
+
 Which transcripts belong to which genes...
 
 Filtering...
