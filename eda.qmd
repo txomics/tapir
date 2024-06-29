@@ -16,7 +16,7 @@ if (!file.exists(path)) {
 
 ```{r}
 library(readr)
-raw_abundance_table <- read.delim(path)
+raw_abundance_table <- read_delim(path)
 dim(raw_abundance_table)
 colnames(raw_abundance_table)
 raw_abundance_table[1:5,1:15]
