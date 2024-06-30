@@ -44,11 +44,41 @@ table(table(counts(d)$gene_id))
 
 ```{r}
 library(DEXSeq)
-samples_for_dex <- DRIMSeq::samples(d)
 counts_for_dex <- round(as.matrix(counts(d)[,-c(1:2)]))
-dxd <- DEXSeqDataSet(countData=counts_for_dex,
-                     sampleData=samples_for_dex,
-                     design=~sample + exon + condition:exon,
-                     featureID=counts(d)$feature_id,
-                     groupID=counts(d)$gene_id)
+dxd <- DEXSeqDataSet(
+  countData=counts_for_dex,
+  sampleData=samples,
+  design=~sample + exon + condition:exon,
+  featureID=counts(d)$feature_id,
+  groupID=counts(d)$gene_id
+)
+# 70 seconds
+if (FALSE) {
+  system.time({
+    dxd <- estimateSizeFactors(dxd)
+    dxd <- estimateDispersions(dxd, quiet=TRUE)
+    dxd <- testForDEU(dxd, reducedModel=~sample + exon)
+  })
+  save(dxd, file="dxd.rda")
+} else {
+  load("dxd.rda")
+}
+res <- DEXSeqResults(dxd)
+```
+
+```{r dexseq_heatmap}
+ids <- res[which.min(res$pvalue),1:2,drop=TRUE]
+counts(d[ids$groupID,])
+ids$featureID
+library(pheatmap)
+dat <- counts(d[ids$groupID,])[,-c(1:2)]
+rownames(dat) <- counts(d[ids$groupID,])$feature_id
+anno_col <- as.data.frame(samples[,"condition"])
+rownames(anno_col) <- samples$sample_id
+pheatmap(
+  dat,
+  cluster_cols=FALSE,
+  show_colnames=FALSE,
+  annotation_col=anno_col
+)
 ```

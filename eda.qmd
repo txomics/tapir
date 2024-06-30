@@ -26,14 +26,13 @@ raw_abundance_table[1:5,1:15]
 library(dplyr)
 library(tidyr)
 raw_abundance_table |>
-  select(starts_with("X")) |>
+  select(contains(c("VZ","CP"))) |>
   summarize(across(everything(), sum))
 ```
 
-Which transcripts belong to which genes...
-
-Filtering...
-
-Visualize expression patterns for a particular gene
-
-How to look across many genes?
+...maybe now move some of the processing code from `testing.qmd`... we
+only need to do this once, and then we could save an intermediate
+object and re-load it for other chapters, so we aren't always starting
+a chapter with the bookkeeping stuff. maybe we could have an earlier
+chapter just on loading/munging data from a flat file into a
+Bioconductor object. 

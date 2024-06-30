@@ -64,7 +64,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./references.html" rel="next">
+<link href="./testing.html" rel="next">
 <link href="./intro.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -152,6 +152,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./testing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Statistical testing</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
@@ -209,47 +215,51 @@ Attaching package: 'readr'</code></pre>
 
     edition_get, local_edition</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="ot">&lt;-</span> <span class="fu">read.delim</span>(path)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 214516 Columns: 35</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Column specification ────────────────────────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr  (7): annot_gene_id, annot_transcript_id, annot_gene_name, annot_transcript_name, gene_novel...
+dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3_VZ, 209_4_VZ, 334_1...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 214516     35</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"         "annot_transcript_id"  
  [5] "annot_gene_name"       "annot_transcript_name" "n_exons"               "length"               
- [9] "gene_novelty"          "transcript_novelty"    "ISM_subtype"           "X209_1_VZ"            
-[13] "X209_2_VZ"             "X209_3_VZ"             "X209_4_VZ"             "X334_1_VZ"            
-[17] "X334_2_VZ"             "X334_3_VZ"             "X334_4_VZ"             "X336_1_VZ"            
-[21] "X336_2_VZ"             "X336_3_VZ"             "X336_4_VZ"             "X334_1_CP"            
-[25] "X334_2_CP"             "X334_3_CP"             "X334_4_CP"             "X209_1_CP"            
-[29] "X209_2_CP"             "X209_3_CP"             "X209_4_CP"             "X336_1_CP"            
-[33] "X336_2_CP"             "X336_3_CP"             "X336_4_CP"            </code></pre>
+ [9] "gene_novelty"          "transcript_novelty"    "ISM_subtype"           "209_1_VZ"             
+[13] "209_2_VZ"              "209_3_VZ"              "209_4_VZ"              "334_1_VZ"             
+[17] "334_2_VZ"              "334_3_VZ"              "334_4_VZ"              "336_1_VZ"             
+[21] "336_2_VZ"              "336_3_VZ"              "336_4_VZ"              "334_1_CP"             
+[25] "334_2_CP"              "334_3_CP"              "334_4_CP"              "209_1_CP"             
+[29] "209_2_CP"              "209_3_CP"              "209_4_CP"              "336_1_CP"             
+[33] "336_2_CP"              "336_3_CP"              "336_4_CP"             </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  gene_ID transcript_ID       annot_gene_id annot_transcript_id annot_gene_name
-1      12            21 ENSG00000268903.1_5 ENST00000494149.2_2      AL627309.6
-2      18            34   ENSG00000228463.4   ENST00000424587.2      AP006222.2
-3      22            39   ENSG00000224813.2   ENST00000445840.1    RP4-669L17.4
-4      32            65 ENSG00000225630.1_4 ENST00000457540.1_1        MTND2P28
-5      33            66 ENSG00000237973.1_4 ENST00000414273.1_1        MTCO1P12
-  annot_transcript_name n_exons length gene_novelty transcript_novelty ISM_subtype X209_1_VZ
-1        AL627309.6-201       1    755        Known              Known        None         0
-2        AP006222.2-001       4   2257        Known              Known        None         0
-3      RP4-669L17.4-001       1    180        Known              Known        None         0
-4          MTND2P28-201       1   1044        Known              Known        None         0
-5          MTCO1P12-201       1   1543        Known              Known        None         0
-  X209_2_VZ X209_3_VZ X209_4_VZ
-1         0         0         0
-2         0         0         0
-3         1         0         0
-4         0         0         0
-5         0         0         0</code></pre>
+<pre><code># A tibble: 5 × 15
+  gene_ID transcript_ID annot_gene_id      annot_transcript_id annot_gene_name annot_transcript_name
+    &lt;dbl&gt;         &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;               &lt;chr&gt;           &lt;chr&gt;                
+1      12            21 ENSG00000268903.1… ENST00000494149.2_2 AL627309.6      AL627309.6-201       
+2      18            34 ENSG00000228463.4  ENST00000424587.2   AP006222.2      AP006222.2-001       
+3      22            39 ENSG00000224813.2  ENST00000445840.1   RP4-669L17.4    RP4-669L17.4-001     
+4      32            65 ENSG00000225630.1… ENST00000457540.1_1 MTND2P28        MTND2P28-201         
+5      33            66 ENSG00000237973.1… ENST00000414273.1_1 MTCO1P12        MTCO1P12-201         
+# ℹ 9 more variables: n_exons &lt;dbl&gt;, length &lt;dbl&gt;, gene_novelty &lt;chr&gt;, transcript_novelty &lt;chr&gt;,
+#   ISM_subtype &lt;chr&gt;, `209_1_VZ` &lt;dbl&gt;, `209_2_VZ` &lt;dbl&gt;, `209_3_VZ` &lt;dbl&gt;, `209_4_VZ` &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Attaching package: 'dplyr'</code></pre>
@@ -269,7 +279,7 @@ Attaching package: 'dplyr'</code></pre>
 
     intersect, setdiff, setequal, union</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Attaching package: 'tidyr'</code></pre>
@@ -279,22 +289,21 @@ Attaching package: 'tidyr'</code></pre>
 
     matches</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="sc">|&gt;</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">"X"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">everything</span>(), sum))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">contains</span>(<span class="fu">c</span>(<span class="st">"VZ"</span>,<span class="st">"CP"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">everything</span>(), sum))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  X209_1_VZ X209_2_VZ X209_3_VZ X209_4_VZ X334_1_VZ X334_2_VZ X334_3_VZ X334_4_VZ X336_1_VZ
-1    623608    542318    501999    529527   1273843   1594927   1160553   1546123   1328077
-  X336_2_VZ X336_3_VZ X336_4_VZ X334_1_CP X334_2_CP X334_3_CP X334_4_CP X209_1_CP X209_2_CP
-1    839389    924697   1323952   1164272   1432399   1048315   1426825   1315540   1198841
-  X209_3_CP X209_4_CP X336_1_CP X336_2_CP X336_3_CP X336_4_CP
-1   1107317   1144579   1328355    840493    927913   1328862</code></pre>
+<pre><code># A tibble: 1 × 24
+  `209_1_VZ` `209_2_VZ` `209_3_VZ` `209_4_VZ` `334_1_VZ` `334_2_VZ` `334_3_VZ` `334_4_VZ` `336_1_VZ`
+       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+1     623608     542318     501999     529527    1273843    1594927    1160553    1546123    1328077
+# ℹ 15 more variables: `336_2_VZ` &lt;dbl&gt;, `336_3_VZ` &lt;dbl&gt;, `336_4_VZ` &lt;dbl&gt;, `334_1_CP` &lt;dbl&gt;,
+#   `334_2_CP` &lt;dbl&gt;, `334_3_CP` &lt;dbl&gt;, `334_4_CP` &lt;dbl&gt;, `209_1_CP` &lt;dbl&gt;, `209_2_CP` &lt;dbl&gt;,
+#   `209_3_CP` &lt;dbl&gt;, `209_4_CP` &lt;dbl&gt;, `336_1_CP` &lt;dbl&gt;, `336_2_CP` &lt;dbl&gt;, `336_3_CP` &lt;dbl&gt;,
+#   `336_4_CP` &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p>Which transcripts belong to which genes…</p>
-<p>Filtering…</p>
-<p>Visualize expression patterns for a particular gene</p>
-<p>How to look across many genes?</p>
+<p>…maybe now move some of the processing code from <code>testing.qmd</code>… we only need to do this once, and then we could save an intermediate object and re-load it for other chapters, so we aren’t always starting a chapter with the bookkeeping stuff. maybe we could have an earlier chapter just on loading/munging data from a flat file into a Bioconductor object.</p>
 
 
 
@@ -539,8 +548,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./references.html" class="pagination-link">
-        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./testing.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Statistical testing</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
