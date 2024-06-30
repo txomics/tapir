@@ -11,6 +11,7 @@ book:
     - intro.qmd
     - eda.qmd
     - testing.qmd
+    - IsoformSwitchAnalyzeR.qmd
     - references.qmd
 
 bibliography: references.bib

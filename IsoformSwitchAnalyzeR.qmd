@@ -1,0 +1,202 @@
+---
+title: "switchlist"
+---
+
+
+```{R, load talon output}
+suppressPackageStartupMessages({
+  library(IsoformSwitchAnalyzeR)
+  library(rtracklayer)
+  library(ggrepel)
+  library(scales)
+  library(GenomicFeatures)
+  library(DescTools)
+  library(tidyverse)
+  library(here)
+})
+
+# Load TALON GTF and FASTA files 
+
+if(!file.exists("data/talon.gtf.gz") | !file.exists("data/talon.fasta.gz") | !file.exists("data/orf.gtf.gz")){
+  url <- "https://github.com/gandallab/Dev_Brain_IsoSeq/raw/main/data/"
+  talon_gtf <- paste0(url, "cp_vz_0.75_min_7_recovery_talon.gtf.gz")
+  talon_fasta <- paste0(url, "sqanti/cp_vz_0.75_min_7_recovery_talon_corrected.fasta.gz")
+  orf_gtf <- paste0(url,"sqanti/cp_vz_0.75_min_7_recovery_talon_corrected.gtf.cds.gtf.gz")
+  
+  download.file(talon_gtf, "data/talon.gtf.gz")
+  download.file(talon_fasta, "data/talon.fasta.gz")
+  download.file(orf_gtf, "data/orf.gtf.gz")
+}else(
+  message("Files already downloaded")
+)
+```
+
+```{R, IsoformSwitchAnalyzeR} 
+
+cts = read_table("data/cp_vz_0.75_min_7_recovery_talon_abundance_filtered.tsv.gz")
+
+cts = cts |>
+  mutate(
+    VZ_209 = rowSums(across(matches("209_.*_VZ"))),
+    VZ_334 = rowSums(across(matches("334_.*_VZ"))),
+    VZ_336 = rowSums(across(matches("336_.*_VZ"))),
+    CP_209 = rowSums(across(matches("209_.*_CP"))),
+    CP_334 = rowSums(across(matches("334_.*_CP"))),
+    CP_336 = rowSums(across(matches("336_.*_CP"))),
+    .keep = "unused"
+  ) |>
+  dplyr::select(!c("gene_ID", "transcript_ID", "annot_transcript_name")) |>
+  dplyr::rename(
+    gene_id = "annot_gene_id",
+    transcript_id = "annot_transcript_id",
+    gene_name = "annot_gene_name"
+  ) |>
+  mutate(
+    gene_novelty = as.factor(gene_novelty),
+    transcript_novelty = as.factor(transcript_novelty),
+    ISM_subtype = ISM_subtype |> na_if("None") |> as.factor()
+  )
+talonExpression = cts |>
+  dplyr::select(transcript_id, starts_with(c("VZ", "CP"))) |>
+  dplyr::rename(isoform_id = "transcript_id")
+
+myDesign = tribble(
+  ~sampleID, ~condition, ~donor,
+  "VZ_209", "VZ", "209",
+  "VZ_334", "VZ", "334",
+  "VZ_336", "VZ", "336",
+  "CP_209", "CP", "209",
+  "CP_334", "CP", "334",
+  "CP_336", "CP", "336",
+) |>
+  dplyr::mutate(
+    dplyr::across(c(condition, donor), as_factor)
+  )
+```
+
+```{R, switchlist}
+system.time({
+      SwitchList <- importRdata(
+      isoformCountMatrix   = talonExpression,
+      designMatrix         = myDesign,
+      isoformExonAnnoation = here("data", "talon.gtf.gz"),
+      isoformNtFasta  = here("data",
+                            "talon.fasta.gz") ,   
+      addAnnotatedORFs     = FALSE,
+      fixStringTieAnnotationProblem = FALSE ) # otherwise will mess up gene_id
+})
+
+#    user  system elapsed 
+# 137.137  29.114 204.206 
+
+system.time({
+  SwitchList <- addORFfromGTF(
+    switchAnalyzeRlist     = SwitchList,
+    pathToGTF              = here("data", "orf.gtf.gz") )
+})
+
+# user  system elapsed 
+#  50.152   5.283  60.974 
+
+system.time({
+  SwitchList <- preFilter(
+    switchAnalyzeRlist         = SwitchList,
+    geneExpressionCutoff       = 1,     # default
+    isoformExpressionCutoff    = 0,     # default
+    IFcutoff                   = 0.01,  # default
+    removeSingleIsoformGenes   = TRUE,  # default
+    reduceToSwitchingGenes     = FALSE, # default (we didn't run DEXSeq yet)
+    keepIsoformInAllConditions = TRUE   # we only have 2 conditions so doesn't matter
+  )
+})
+
+  #  user  system elapsed 
+  # 0.444   0.215   1.109 
+```
+
+```{R, switchplot}
+switchPlot(SwitchList,
+  gene='KMT2E'
+)
+
+# Warning: We recomend running the isoform switching analysis before doing the transcript plot. See ?detectIsoformSwitching for more detailsOmitting toplogy visualization as it has not been added. You can add this analysis through analyzeDeepTMHMM(). To avoid this message set "plotTopology=FALSE"
+
+```
+
+```{R, DEXSeq SwitchList}
+
+system.time({
+  DEXSeqSwitchList <- isoformSwitchTestDEXSeq(
+    switchAnalyzeRlist         = SwitchList,
+    reduceToSwitchingGenes     = FALSE
+  )
+})
+
+#    user  system elapsed 
+# 412.189  11.498 516.883
+system.time({
+  SatuRnSwitchList <- isoformSwitchTestSatuRn(
+    switchAnalyzeRlist         = SwitchList,
+    reduceToSwitchingGenes     = FALSE
+  )
+})
+
+ #  user  system elapsed 
+ # 58.635   5.900  72.164 
+```
+
+```{R, DTE }
+
+#only those isoforms that are in the SwitchList are further processed in DTE analysis
+cts_preFilter = talonExpression |> filter(isoform_id %in% SwitchList$isoformFeatures$isoform_id)
+
+
+dds1 = DESeqDataSetFromMatrix(
+  as.data.frame(cts_preFilter),
+  as.data.frame(myDesign),
+  ~ donor + condition,
+  tidy = T
+)
+
+
+system.time({
+  dds1  = DESeq(dds1)
+})
+
+ #   user  system elapsed 
+ # 23.745   0.860  25.086 
+
+#all isoforms are processed in DTE analysis
+#May be useful to look for isoforms of genes that are not expressed in some conditions but in others. In this case, Isoform Fraction is undefined since the denominator (gene expression) is 0. However, in DTE, the denominator is count of all isoforms expressed in a sample or condition, therefore DTE may still be defined. 
+dds2 = DESeqDataSetFromMatrix(
+  as.data.frame(talonExpression),
+  as.data.frame(myDesign),
+  ~ donor + condition,
+  tidy = T
+)
+
+system.time({
+  dds2  = DESeq(dds2)
+})
+
+
+#compare dds1 (only those isoforms in filtered switch list) vs dds2 (all isoforms)
+nrow(cts_preFilter)
+# 214028
+nrow(talonExpression)
+# 214516
+
+# 488 isoforms are not in the filtered list
+```
+
+```{R, DTE_results}
+DTE_results = DESeq2::results(dds1)
+DTE_results
+
+DTE_results = DTE_results |>
+  as_tibble(rownames = "isoform_id") |>
+  mutate(padj = replace_na(padj, 1))
+
+# If a row is filtered by automatic independent filtering, for having a low mean normalized count, then only the adjusted p value will be set to NA.
+#https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#more-information-on-results-columns
+```
