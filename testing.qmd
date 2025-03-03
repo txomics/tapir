@@ -2,7 +2,8 @@
 
 Downloading Glinos *et al.* dataset (GTEx, PTBP1 knockdown)
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 library(here)
 # https://drive.google.com/file/d/1ATHgwFlIMmI651C5TYtiBxm2atTvbBYn/view?usp=sharing
 # counts
@@ -30,7 +31,8 @@ if (!file.exists(path)) {
 
 Assembling the object:
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 library(readr)
 library(dplyr)
 library(stringr)
@@ -47,13 +49,168 @@ counts <- as.matrix(counts[,meta$sample_id]) # subset to the knockdown
 rownames(counts) <- rnames
 ```
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 library(SummarizedExperiment)
 se <- SummarizedExperiment(list(counts = counts),
                            colData = meta)
-saveRDS(se, file=here("data","glinos_se.rds"))
+saveRDS(se, file=here("data", "glinos_se.rds"))
 ```
 
 ```{r}
-se <- readRDS(here("data","glinos_se.rds"))
+#| message: false
+library(here)
+library(SummarizedExperiment)
+se <- readRDS(here("data", "glinos_se.rds"))
+keep <- rowSums(assay(se) >= 10) >= 6
+table(keep)
+se <- se[keep,]
+```
+
+```{r}
+#| message: false
+library(DESeq2)
+library(tximeta)
+library(stringr)
+stopifnot(packageVersion("tximeta") >= "1.25.1")
+colsums <- colSums(assay(se, "counts"))
+cpm <- t(t(assay(se, "counts")) / colsums * 1e6)
+assay(se, "abundance") <- cpm
+assay(se, "length", withDimnames=FALSE) <- matrix(1000, nrow=nrow(se), ncol=ncol(se))
+se$condition <- factor(se$condition, c("ctrl","exp"))
+se_sub <- se[grepl("ENSG",rownames(se)),]
+tx2gene <- DataFrame(txid = rownames(se_sub),
+                     geneid = str_extract(rownames(se_sub), ".*_(ENSG.*)$", group=1))
+gse <- summarizeToGene(se_sub, tx2gene = tx2gene, skipRanges=TRUE)
+#saveRDS(gse, file=here("data","glinos_gene_counts.rds"))
+```
+
+```{r PCA}
+dds <- DESeqDataSet(gse, ~condition)
+keep <- rowSums(counts(dds) >= 10) >= 6
+table(keep)
+dds <- DESeq(dds, minRep=Inf)
+res <- results(dds)
+summary(res)
+``` 
+
+```{r glinos-plotcounts}
+library(org.Hs.eg.db)
+gene_anno <- DataFrame(geneid = str_extract(rownames(dds), "(ENSG.*)\\..*", group=1),
+                       baseMean = round(rowData(dds)$baseMean))
+gene_anno$symbol <- org.Hs.eg.db |> mapIds(gene_anno$geneid, "SYMBOL", "ENSEMBL")
+gene_anno$symbol[is.na(gene_anno$symbol)] <- gene_anno$geneid[is.na(gene_anno$symbol)]
+rowData(dds)$symbol <- gene_anno$symbol
+idx <- which(rowData(dds)$symbol == "PTBP1")
+plotCounts(dds, gene=idx)
+```
+
+```{r glinos-pca}
+vsd <- vst(dds, blind=FALSE)
+plotPCA(vsd)
+```
+
+```{r}
+#saveRDS(dds, file=here("data", "deseq2_gene.rds"))
+#saveRDS(vsd, file=here("data", "vst_gene.rds"))
+```
+
+```{r}
+#| eval: false
+library(Glimma)
+g <- glimmaMA(
+  dds, 
+  groups=dds$condition, 
+  anno=gene_anno[,-1],
+  main="Glinos et al. (2022) - PTBP1 knockdown", # title above left summary plot
+  transform.counts="cpm", 
+  test="Wald", name="condition_exp_vs_ctrl",
+  independentFiltering=FALSE, 
+  cooksCutoff=FALSE
+)
+htmlwidgets::saveWidget(g, here("data","glinos_ma-plot.html"))
+```
+
+```{r}
+# DTU filter
+se <- se_sub # removed txps not associated with genes
+rowData(se)$gene_id <- tx2gene[,"geneid"]
+```
+
+```{r}
+library(plyxp)
+xp <- se |>
+  new_plyxp()
+xp <- xp |>
+  mutate(rows(gene = str_extract(gene_id, "(ENSG.*)\\..*", group=1),
+              symbol = mapIds(org.Hs.eg.db, gene, "SYMBOL", "ENSEMBL"),
+              symbol = dplyr::case_when(
+                is.na(symbol) ~ gene,
+                TRUE ~ symbol
+              )))
+tab <- table(rowData(se)$gene_id)
+one_isoform_gene <- names(tab)[ tab == 1]
+xp <- xp |>
+  filter(rows(!gene_id %in% one_isoform_gene)) |>
+  arrange(rows(gene_id))
+```
+
+```{r}
+head(table(table(rowData(xp)$gene_id))) # confirm no single isoform genes
+```
+
+```{r}
+se <- se(xp)
+# needed for satuRn
+rowData(se)$isoform_id <- rownames(se)
+```
+
+```{r}
+# 5 seconds
+library(satuRn)
+se <- satuRn::fitDTU(se, formula=~0 + condition)
+```
+
+```{r}
+design <- model.matrix(~0 + condition, colData(se))
+colnames(design)
+colnames(design) <- levels(se$condition)
+L <- limma::makeContrasts(
+  exp_vs_ctrl = exp - ctrl,
+  levels = design
+)
+L # contrast matrix
+```
+
+```{r saturn-test}
+se <- satuRn::testDTU(
+  object = se,
+  contrasts = L,
+  diagplot1 = TRUE,
+  diagplot2 = TRUE
+)
+#saveRDS(se, file=here("data","glinos-saturn_dtu.rds"))
+```
+
+```{r}
+library(dplyr)
+sig_res <- rowData(se)[[paste0("fitDTUResult_exp_vs_ctrl")]] |>
+  as_tibble() |>
+  bind_cols(as.data.frame(rowData(se)[,1:3])) |>
+  filter(empirical_FDR < .1) |>
+  select(gene_id, symbol, estimates, empirical_pval, empirical_FDR) |>
+  arrange(empirical_pval)
+#write.csv(sig_res, file=here("data","glinos-saturn_dtu.csv"), quote=FALSE, row.names=FALSE)
+sig_res
+```
+
+```{r}
+cpm <- assay(se, "abundance")[rowData(se)$symbol == "PDLIM7",]
+rownames(cpm) <- seq_len(nrow(cpm))
+colnames(cpm) <- se$condition
+round(cpm)
+```
+
+```{r}
+sessionInfo()
 ```
