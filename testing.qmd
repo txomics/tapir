@@ -1,0 +1,59 @@
+# Statistical testing
+
+Downloading Glinos *et al.* dataset (GTEx, PTBP1 knockdown)
+
+```{r eval=FALSE}
+library(here)
+# https://drive.google.com/file/d/1ATHgwFlIMmI651C5TYtiBxm2atTvbBYn/view?usp=sharing
+# counts
+url <- "https://drive.google.com/uc?export=download&id=1ATHgwFlIMmI651C5TYtiBxm2atTvbBYn"
+filename <- "quantification_flair_filter.counts.txt.gz"
+path <- here("data", filename)
+if (!file.exists(path)) {
+  download.file(url, path)
+}
+# GTF
+url <- "https://drive.google.com/uc?export=download&id=1S0TRXoXsfnXwJ0Dh5bLqVmyvFAAALFMU"
+filename <- "flair_filter_transcripts.gtf.gz"
+path <- here("data", filename)
+if (!file.exists(path)) {
+  download.file(url, path)
+}
+# metadata
+url <- "https://drive.google.com/uc?export=download&id=1LpYPXXhMtUV3vMG7SMLV69-JxZfc59o2"
+filename <- "glinos_metadata.csv"
+path <- here("data", filename)
+if (!file.exists(path)) {
+  download.file(url, path)
+}
+```
+
+Assembling the object:
+
+```{r eval=FALSE}
+library(readr)
+library(dplyr)
+library(stringr)
+counts <- read_delim(here("data", "quantification_flair_filter.counts.txt.gz"))
+meta <- read_delim(here("data", "glinos_metadata.csv"))
+colnames(meta)[10] <- "total_reads"
+meta <- meta |>
+  mutate(condition = str_extract(sample_id, "(ctrl|exp)")) |>
+  select(sample_id, sample_name, condition, contains("read") | contains("3_prime")) |>
+  arrange(condition, sample_name)
+
+rnames <- counts$transcript
+counts <- as.matrix(counts[,meta$sample_id]) # subset to the knockdown
+rownames(counts) <- rnames
+```
+
+```{r eval=FALSE}
+library(SummarizedExperiment)
+se <- SummarizedExperiment(list(counts = counts),
+                           colData = meta)
+saveRDS(se, file=here("data","glinos_se.rds"))
+```
+
+```{r}
+se <- readRDS(here("data","glinos_se.rds"))
+```
