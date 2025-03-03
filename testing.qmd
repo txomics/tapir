@@ -111,8 +111,8 @@ plotPCA(vsd)
 ```
 
 ```{r}
-#saveRDS(dds, file=here("data", "deseq2_gene.rds"))
-#saveRDS(vsd, file=here("data", "vst_gene.rds"))
+#saveRDS(dds, file=here("data", "glinos_deseq2_gene.rds"))
+#saveRDS(vsd, file=here("data", "glinos_vst_gene.rds"))
 ```
 
 ```{r}
@@ -189,7 +189,7 @@ se <- satuRn::testDTU(
   diagplot1 = TRUE,
   diagplot2 = TRUE
 )
-#saveRDS(se, file=here("data","glinos-saturn_dtu.rds"))
+#saveRDS(se, file=here("data","glinos_saturn_dtu.rds"))
 ```
 
 ```{r}
@@ -200,7 +200,7 @@ sig_res <- rowData(se)[[paste0("fitDTUResult_exp_vs_ctrl")]] |>
   filter(empirical_FDR < .1) |>
   select(gene_id, symbol, estimates, empirical_pval, empirical_FDR) |>
   arrange(empirical_pval)
-#write.csv(sig_res, file=here("data","glinos-saturn_dtu.csv"), quote=FALSE, row.names=FALSE)
+#write.csv(sig_res, file=here("data","glinos_saturn_dtu.csv"), quote=FALSE, row.names=FALSE)
 sig_res
 ```
 
