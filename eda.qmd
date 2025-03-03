@@ -30,9 +30,27 @@ raw_abundance_table |>
   summarize(across(everything(), sum))
 ```
 
-...maybe now move some of the processing code from `testing.qmd`... we
-only need to do this once, and then we could save an intermediate
-object and re-load it for other chapters, so we aren't always starting
-a chapter with the bookkeeping stuff. maybe we could have an earlier
-chapter just on loading/munging data from a flat file into a
-Bioconductor object. 
+```{r}
+library(here)
+filename <- "cp_vz_0.75_min_7_recovery_talon_abundance_filtered.tsv.gz"
+path <- here("data",filename)
+library(readr)
+raw_abundance_table <- read_delim(path)
+dim(raw_abundance_table)
+colnames(raw_abundance_table)
+```
+
+```{r}
+library(dplyr)
+counts <- raw_abundance_table |>
+  select(gene_id = annot_gene_id,
+         feature_id = annot_transcript_id,
+         contains(c("VZ","CP")))
+counts <- counts |>
+  rename_with(.cols = contains(c("VZ","CP")),
+              \(x) paste0("s", x))
+library(tidyr)
+samples <- tibble(sample_id = colnames(counts)[-c(1:2)]) |>
+  separate(sample_id, into=c("unit","rep","condition"), sep="_", remove=FALSE) |>
+  mutate_at(c("rep","condition"), factor)
+```
