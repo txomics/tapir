@@ -303,7 +303,53 @@ Attaching package: 'tidyr'</code></pre>
 #   `336_4_CP` &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p>…maybe now move some of the processing code from <code>testing.qmd</code>… we only need to do this once, and then we could save an intermediate object and re-load it for other chapters, so we aren’t always starting a chapter with the bookkeeping stuff. maybe we could have an earlier chapter just on loading/munging data from a flat file into a Bioconductor object.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>filename <span class="ot">&lt;-</span> <span class="st">"cp_vz_0.75_min_7_recovery_talon_abundance_filtered.tsv.gz"</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>,filename)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 214516 Columns: 35
+── Column specification ────────────────────────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr  (7): annot_gene_id, annot_transcript_id, annot_gene_name, annot_transcript_name, gene_novel...
+dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3_VZ, 209_4_VZ, 334_1...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 214516     35</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(raw_abundance_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"         "annot_transcript_id"  
+ [5] "annot_gene_name"       "annot_transcript_name" "n_exons"               "length"               
+ [9] "gene_novelty"          "transcript_novelty"    "ISM_subtype"           "209_1_VZ"             
+[13] "209_2_VZ"              "209_3_VZ"              "209_4_VZ"              "334_1_VZ"             
+[17] "334_2_VZ"              "334_3_VZ"              "334_4_VZ"              "336_1_VZ"             
+[21] "336_2_VZ"              "336_3_VZ"              "336_4_VZ"              "334_1_CP"             
+[25] "334_2_CP"              "334_3_CP"              "334_4_CP"              "209_1_CP"             
+[29] "209_2_CP"              "209_3_CP"              "209_4_CP"              "336_1_CP"             
+[33] "336_2_CP"              "336_3_CP"              "336_4_CP"             </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>counts <span class="ot">&lt;-</span> raw_abundance_table <span class="sc">|&gt;</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">gene_id =</span> annot_gene_id,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">feature_id =</span> annot_transcript_id,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>         <span class="fu">contains</span>(<span class="fu">c</span>(<span class="st">"VZ"</span>,<span class="st">"CP"</span>)))</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>counts <span class="ot">&lt;-</span> counts <span class="sc">|&gt;</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="at">.cols =</span> <span class="fu">contains</span>(<span class="fu">c</span>(<span class="st">"VZ"</span>,<span class="st">"CP"</span>)),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>              \(x) <span class="fu">paste0</span>(<span class="st">"s"</span>, x))</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">sample_id =</span> <span class="fu">colnames</span>(counts)[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)]) <span class="sc">|&gt;</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(sample_id, <span class="at">into=</span><span class="fu">c</span>(<span class="st">"unit"</span>,<span class="st">"rep"</span>,<span class="st">"condition"</span>), <span class="at">sep=</span><span class="st">"_"</span>, <span class="at">remove=</span><span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_at</span>(<span class="fu">c</span>(<span class="st">"rep"</span>,<span class="st">"condition"</span>), factor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
 
