@@ -370,41 +370,24 @@ low counts [2]     : 0, 0%
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rowData</span>(se)<span class="sc">$</span>gene_id <span class="ot">&lt;-</span> tx2gene[,<span class="st">"geneid"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyxp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'plyxp'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:AnnotationDbi':
-
-    select</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:stats':
-
-    filter</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> se <span class="sc">|&gt;</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">new_plyxp</span>()</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> xp <span class="sc">|&gt;</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">rows</span>(<span class="at">gene =</span> <span class="fu">str_extract</span>(gene_id, <span class="st">"(ENSG.*)</span><span class="sc">\\</span><span class="st">..*"</span>, <span class="at">group=</span><span class="dv">1</span>),</span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">symbol =</span> <span class="fu">mapIds</span>(org.Hs.eg.db, gene, <span class="st">"SYMBOL"</span>, <span class="st">"ENSEMBL"</span>),</span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">symbol =</span> dplyr<span class="sc">::</span><span class="fu">case_when</span>(</span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">is.na</span>(symbol) <span class="sc">~</span> gene,</span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>                <span class="cn">TRUE</span> <span class="sc">~</span> symbol</span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>              )))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>'select()' returned 1:many mapping between keys and columns</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">rowData</span>(se)<span class="sc">$</span>gene_id)</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>one_isoform_gene <span class="ot">&lt;-</span> <span class="fu">names</span>(tab)[ tab <span class="sc">==</span> <span class="dv">1</span>]</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> xp <span class="sc">|&gt;</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">rows</span>(<span class="sc">!</span>gene_id <span class="sc">%in%</span> one_isoform_gene)) <span class="sc">|&gt;</span></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">rows</span>(gene_id))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyxp)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> se <span class="sc">|&gt;</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">new_plyxp</span>()</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> xp <span class="sc">|&gt;</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">rows</span>(<span class="at">gene =</span> <span class="fu">str_extract</span>(gene_id, <span class="st">"(ENSG.*)</span><span class="sc">\\</span><span class="st">..*"</span>, <span class="at">group=</span><span class="dv">1</span>),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">symbol =</span> <span class="fu">mapIds</span>(org.Hs.eg.db, gene, <span class="st">"SYMBOL"</span>, <span class="st">"ENSEMBL"</span>),</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">symbol =</span> dplyr<span class="sc">::</span><span class="fu">case_when</span>(</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">is.na</span>(symbol) <span class="sc">~</span> gene,</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>                <span class="cn">TRUE</span> <span class="sc">~</span> symbol</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>              )))</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">rowData</span>(se)<span class="sc">$</span>gene_id)</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>one_isoform_gene <span class="ot">&lt;-</span> <span class="fu">names</span>(tab)[ tab <span class="sc">==</span> <span class="dv">1</span>]</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> xp <span class="sc">|&gt;</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">rows</span>(<span class="sc">!</span>gene_id <span class="sc">%in%</span> one_isoform_gene)) <span class="sc">|&gt;</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">rows</span>(gene_id))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">table</span>(<span class="fu">table</span>(<span class="fu">rowData</span>(xp)<span class="sc">$</span>gene_id))) <span class="co"># confirm no single isoform genes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">table</span>(<span class="fu">table</span>(<span class="fu">rowData</span>(xp)<span class="sc">$</span>gene_id))) <span class="co"># confirm no single isoform genes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
    2    3    4    5    6    7 
@@ -412,27 +395,27 @@ Attaching package: 'plyxp'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> <span class="fu">se</span>(xp)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="co"># needed for satuRn</span></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rowData</span>(se)<span class="sc">$</span>isoform_id <span class="ot">&lt;-</span> <span class="fu">rownames</span>(se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> <span class="fu">se</span>(xp)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># needed for satuRn</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rowData</span>(se)<span class="sc">$</span>isoform_id <span class="ot">&lt;-</span> <span class="fu">rownames</span>(se)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 5 seconds</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(satuRn)</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> satuRn<span class="sc">::</span><span class="fu">fitDTU</span>(se, <span class="at">formula=</span><span class="sc">~</span><span class="dv">0</span> <span class="sc">+</span> condition)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 5 seconds</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(satuRn)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> satuRn<span class="sc">::</span><span class="fu">fitDTU</span>(se, <span class="at">formula=</span><span class="sc">~</span><span class="dv">0</span> <span class="sc">+</span> condition)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span><span class="dv">0</span> <span class="sc">+</span> condition, <span class="fu">colData</span>(se))</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(design)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span><span class="dv">0</span> <span class="sc">+</span> condition, <span class="fu">colData</span>(se))</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(design)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "conditionctrl" "conditionexp" </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(design) <span class="ot">&lt;-</span> <span class="fu">levels</span>(se<span class="sc">$</span>condition)</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> limma<span class="sc">::</span><span class="fu">makeContrasts</span>(</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_vs_ctrl =</span> exp <span class="sc">-</span> ctrl,</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">levels =</span> design</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>L <span class="co"># contrast matrix</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(design) <span class="ot">&lt;-</span> <span class="fu">levels</span>(se<span class="sc">$</span>condition)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>L <span class="ot">&lt;-</span> limma<span class="sc">::</span><span class="fu">makeContrasts</span>(</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">exp_vs_ctrl =</span> exp <span class="sc">-</span> ctrl,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">levels =</span> design</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>L <span class="co"># contrast matrix</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      Contrasts
 Levels exp_vs_ctrl
@@ -441,89 +424,29 @@ Levels exp_vs_ctrl
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> satuRn<span class="sc">::</span><span class="fu">testDTU</span>(</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">object =</span> se,</span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">contrasts =</span> L,</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">diagplot1 =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">diagplot2 =</span> <span class="cn">TRUE</span></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> satuRn<span class="sc">::</span><span class="fu">testDTU</span>(</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">object =</span> se,</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">contrasts =</span> L,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">diagplot1 =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">diagplot2 =</span> <span class="cn">TRUE</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="testing_files/figure-html/saturn-test-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output-display">
 <p><img src="testing_files/figure-html/saturn-test-2.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(se, file=here("data","glinos_saturn_dtu.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(se, file=here("data","glinos_saturn_dtu.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'dplyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:AnnotationDbi':
-
-    select</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:Biobase':
-
-    combine</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:GenomicRanges':
-
-    intersect, setdiff, union</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:GenomeInfoDb':
-
-    intersect</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:IRanges':
-
-    collapse, desc, intersect, setdiff, slice, union</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:S4Vectors':
-
-    first, intersect, rename, setdiff, setequal, union</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:BiocGenerics':
-
-    combine, intersect, setdiff, union</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:matrixStats':
-
-    count</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:testthat':
-
-    matches</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:stats':
-
-    filter, lag</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>sig_res <span class="ot">&lt;-</span> <span class="fu">rowData</span>(se)[[<span class="fu">paste0</span>(<span class="st">"fitDTUResult_exp_vs_ctrl"</span>)]] <span class="sc">|&gt;</span></span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(<span class="fu">as.data.frame</span>(<span class="fu">rowData</span>(se)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>])) <span class="sc">|&gt;</span></span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(empirical_FDR <span class="sc">&lt;</span> .<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
-<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(gene_id, symbol, estimates, empirical_pval, empirical_FDR) <span class="sc">|&gt;</span></span>
-<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(empirical_pval)</span>
-<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="co">#write.csv(sig_res, file=here("data","glinos_saturn_dtu.csv"), quote=FALSE, row.names=FALSE)</span></span>
-<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>sig_res</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>sig_res <span class="ot">&lt;-</span> <span class="fu">rowData</span>(se)[[<span class="fu">paste0</span>(<span class="st">"fitDTUResult_exp_vs_ctrl"</span>)]] <span class="sc">|&gt;</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(<span class="fu">as.data.frame</span>(<span class="fu">rowData</span>(se)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>])) <span class="sc">|&gt;</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(empirical_FDR <span class="sc">&lt;</span> .<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(gene_id, symbol, estimates, empirical_pval, empirical_FDR) <span class="sc">|&gt;</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(empirical_pval)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="co">#write.csv(sig_res, file=here("data","glinos_saturn_dtu.csv"), quote=FALSE, row.names=FALSE)</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>sig_res</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 61 × 5
    gene_id            symbol estimates empirical_pval empirical_FDR
@@ -542,10 +465,10 @@ Attaching package: 'dplyr'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>cpm <span class="ot">&lt;-</span> <span class="fu">assay</span>(se, <span class="st">"abundance"</span>)[<span class="fu">rowData</span>(se)<span class="sc">$</span>symbol <span class="sc">==</span> <span class="st">"PDLIM7"</span>,]</span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(cpm) <span class="ot">&lt;-</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(cpm))</span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(cpm) <span class="ot">&lt;-</span> se<span class="sc">$</span>condition</span>
-<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(cpm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>cpm <span class="ot">&lt;-</span> <span class="fu">assay</span>(se, <span class="st">"abundance"</span>)[<span class="fu">rowData</span>(se)<span class="sc">$</span>symbol <span class="sc">==</span> <span class="st">"PDLIM7"</span>,]</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(cpm) <span class="ot">&lt;-</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(cpm))</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(cpm) <span class="ot">&lt;-</span> se<span class="sc">$</span>condition</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(cpm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  ctrl ctrl ctrl ctrl ctrl ctrl exp exp exp exp exp exp exp
 1    1    2    2    2    1    1 295 190 150 146 175 183 236
@@ -557,7 +480,7 @@ Attaching package: 'dplyr'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>R version 4.4.2 (2024-10-31)
 Platform: aarch64-apple-darwin20
@@ -577,14 +500,13 @@ attached base packages:
 [1] stats4    stats     graphics  grDevices datasets  utils     methods   base     
 
 other attached packages:
- [1] dplyr_1.1.4                 satuRn_1.14.0               plyxp_1.1.1                
- [4] org.Hs.eg.db_3.20.0         AnnotationDbi_1.68.0        stringr_1.5.1              
- [7] tximeta_1.25.2              DESeq2_1.46.0               SummarizedExperiment_1.36.0
-[10] Biobase_2.66.0              GenomicRanges_1.58.0        GenomeInfoDb_1.42.3        
-[13] IRanges_2.40.1              S4Vectors_0.44.0            BiocGenerics_0.52.0        
-[16] MatrixGenerics_1.18.1       matrixStats_1.5.0           here_1.0.1                 
-[19] testthat_3.2.3              rmarkdown_2.29              devtools_2.4.5             
-[22] usethis_3.1.0              
+ [1] satuRn_1.14.0               plyxp_1.1.1                 org.Hs.eg.db_3.20.0        
+ [4] AnnotationDbi_1.68.0        stringr_1.5.1               tximeta_1.25.2             
+ [7] DESeq2_1.46.0               SummarizedExperiment_1.36.0 Biobase_2.66.0             
+[10] GenomicRanges_1.58.0        GenomeInfoDb_1.42.3         IRanges_2.40.1             
+[13] S4Vectors_0.44.0            BiocGenerics_0.52.0         MatrixGenerics_1.18.1      
+[16] matrixStats_1.5.0           here_1.0.1                  testthat_3.2.3             
+[19] rmarkdown_2.29              devtools_2.4.5              usethis_3.1.0              
 
 loaded via a namespace (and not attached):
   [1] jsonlite_1.9.0           tximport_1.34.0          magrittr_2.0.3          
@@ -611,21 +533,22 @@ loaded via a namespace (and not attached):
  [64] hms_1.1.3                utf8_1.2.4               xml2_1.3.6              
  [67] XVector_0.46.0           BiocVersion_3.20.0       pillar_1.10.1           
  [70] limma_3.62.2             later_1.4.1              splines_4.4.2           
- [73] BiocFileCache_2.14.0     lattice_0.22-6           rtracklayer_1.66.0      
- [76] bit_4.5.0.1              tidyselect_1.2.1         locfit_1.5-9.11         
- [79] pbapply_1.7-2            Biostrings_2.74.1        miniUI_0.1.1.1          
- [82] knitr_1.49               ProtGenerics_1.38.0      xfun_0.51               
- [85] statmod_1.5.0            brio_1.1.5               stringi_1.8.4           
- [88] UCSC.utils_1.2.0         boot_1.3-31              lazyeval_0.2.2          
- [91] yaml_2.3.10              evaluate_1.0.3           codetools_0.2-20        
- [94] tibble_3.2.1             BiocManager_1.30.25      cli_3.6.4               
- [97] xtable_1.8-4             munsell_0.5.1            Rcpp_1.0.14             
-[100] dbplyr_2.5.0             png_0.1-8                XML_3.99-0.18           
-[103] parallel_4.4.2           ellipsis_0.3.2           ggplot2_3.5.1           
-[106] blob_1.2.4               prettyunits_1.2.0        profvis_0.4.0           
-[109] AnnotationFilter_1.30.0  urlchecker_1.0.1         bitops_1.0-9            
-[112] txdbmaker_1.2.1          scales_1.3.0             purrr_1.0.4             
-[115] crayon_1.5.3             rlang_1.1.5              KEGGREST_1.46.0         </code></pre>
+ [73] dplyr_1.1.4              BiocFileCache_2.14.0     lattice_0.22-6          
+ [76] rtracklayer_1.66.0       bit_4.5.0.1              tidyselect_1.2.1        
+ [79] locfit_1.5-9.11          pbapply_1.7-2            Biostrings_2.74.1       
+ [82] miniUI_0.1.1.1           knitr_1.49               ProtGenerics_1.38.0     
+ [85] xfun_0.51                statmod_1.5.0            brio_1.1.5              
+ [88] stringi_1.8.4            UCSC.utils_1.2.0         boot_1.3-31             
+ [91] lazyeval_0.2.2           yaml_2.3.10              evaluate_1.0.3          
+ [94] codetools_0.2-20         tibble_3.2.1             BiocManager_1.30.25     
+ [97] cli_3.6.4                xtable_1.8-4             munsell_0.5.1           
+[100] Rcpp_1.0.14              dbplyr_2.5.0             png_0.1-8               
+[103] XML_3.99-0.18            parallel_4.4.2           ellipsis_0.3.2          
+[106] ggplot2_3.5.1            blob_1.2.4               prettyunits_1.2.0       
+[109] profvis_0.4.0            AnnotationFilter_1.30.0  urlchecker_1.0.1        
+[112] bitops_1.0-9             txdbmaker_1.2.1          scales_1.3.0            
+[115] purrr_1.0.4              crayon_1.5.3             rlang_1.1.5             
+[118] KEGGREST_1.46.0         </code></pre>
 </div>
 </div>
 

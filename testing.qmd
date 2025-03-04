@@ -138,6 +138,7 @@ rowData(se)$gene_id <- tx2gene[,"geneid"]
 ```
 
 ```{r}
+#| message: false
 library(plyxp)
 xp <- se |>
   new_plyxp()
@@ -193,13 +194,12 @@ se <- satuRn::testDTU(
 ```
 
 ```{r}
-library(dplyr)
 sig_res <- rowData(se)[[paste0("fitDTUResult_exp_vs_ctrl")]] |>
-  as_tibble() |>
-  bind_cols(as.data.frame(rowData(se)[,1:3])) |>
-  filter(empirical_FDR < .1) |>
-  select(gene_id, symbol, estimates, empirical_pval, empirical_FDR) |>
-  arrange(empirical_pval)
+  tibble::as_tibble() |>
+  dplyr::bind_cols(as.data.frame(rowData(se)[,1:3])) |>
+  dplyr::filter(empirical_FDR < .1) |>
+  dplyr::select(gene_id, symbol, estimates, empirical_pval, empirical_FDR) |>
+  dplyr::arrange(empirical_pval)
 #write.csv(sig_res, file=here("data","glinos_saturn_dtu.csv"), quote=FALSE, row.names=FALSE)
 sig_res
 ```
