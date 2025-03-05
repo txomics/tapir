@@ -128,7 +128,7 @@ library(Glimma)
 g <- glimmaMA(
   dds,
   groups=dds$condition,
-  anno=gene_anno[,-1],
+  anno=gene_anno[complete.cases(results(dds)),-1],
   main="Glinos et al. (2022) - PTBP1 knockdown", # title above left summary plot
   transform.counts="cpm",
   test="Wald", name="condition_exp_vs_ctrl",
