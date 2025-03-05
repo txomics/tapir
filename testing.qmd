@@ -68,11 +68,18 @@ se <- se[keep,]
 ```
 
 ```{r}
+#| include: false
+if (tryCatch(packageVersion("tximeta") < "1.25.1", error = function(e) TRUE)) {
+  message("installing dev version of tximeta")
+  remotes::install_github("thelovelab/tximeta")
+}
+```
+
+```{r}
 #| message: false
 library(DESeq2)
 library(tximeta)
 library(stringr)
-stopifnot(packageVersion("tximeta") >= "1.25.1")
 colsums <- colSums(assay(se, "counts"))
 cpm <- t(t(assay(se, "counts")) / colsums * 1e6)
 assay(se, "abundance") <- cpm
@@ -92,7 +99,7 @@ table(keep)
 dds <- DESeq(dds, minRep=Inf)
 res <- results(dds)
 summary(res)
-``` 
+```
 
 ```{r glinos-plotcounts}
 library(org.Hs.eg.db)
@@ -119,13 +126,13 @@ plotPCA(vsd)
 #| eval: false
 library(Glimma)
 g <- glimmaMA(
-  dds, 
-  groups=dds$condition, 
+  dds,
+  groups=dds$condition,
   anno=gene_anno[,-1],
   main="Glinos et al. (2022) - PTBP1 knockdown", # title above left summary plot
-  transform.counts="cpm", 
+  transform.counts="cpm",
   test="Wald", name="condition_exp_vs_ctrl",
-  independentFiltering=FALSE, 
+  independentFiltering=FALSE,
   cooksCutoff=FALSE
 )
 htmlwidgets::saveWidget(g, here("data","glinos_ma-plot.html"))
