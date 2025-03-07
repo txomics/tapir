@@ -249,12 +249,12 @@ library(plyranges)
 # first one has negative estimate (KD / CTRL)
 # this means it is the more common one when PTBP1 is around
 # so the other ones possible contain SE with the C/U signal upstream
-e[[1]] |>
-  filter_by_non_overlaps(e[[2]])
-e[[1]] |>
-  filter_by_non_overlaps(e[[3]])
-upstr <- e[[1]] |>
-  filter_by_non_overlaps(e[[2]]) |>
+e[[2]] |>
+  filter_by_non_overlaps(e[[1]])
+e[[3]] |>
+  filter_by_non_overlaps(e[[1]])
+upstr <- e[[2]] |>
+  filter_by_non_overlaps(e[[1]]) |>
   flank_upstream(100)
 ```
 
