@@ -68,6 +68,10 @@ se <- se[keep,]
 ```
 
 ```{r}
+set.seed(5) # to fix jitter
+```
+
+```{r}
 #| message: false
 library(DESeq2)
 library(tximeta)
@@ -92,7 +96,7 @@ table(keep)
 dds <- DESeq(dds, minRep=Inf)
 res <- results(dds)
 summary(res)
-``` 
+```
 
 ```{r glinos-plotcounts}
 library(org.Hs.eg.db)
@@ -194,11 +198,11 @@ se <- satuRn::testDTU(
 ```
 
 ```{r}
-sig_res <- rowData(se)[[paste0("fitDTUResult_exp_vs_ctrl")]] |>
+sig_res <- rowData(se)[["fitDTUResult_exp_vs_ctrl"]] |>
   tibble::as_tibble() |>
-  dplyr::bind_cols(as.data.frame(rowData(se)[,1:3])) |>
+  dplyr::bind_cols(as.data.frame(rowData(se)[,1:4])) |>
   dplyr::filter(empirical_FDR < .1) |>
-  dplyr::select(gene_id, symbol, estimates, empirical_pval, empirical_FDR) |>
+  dplyr::select(gene_id, isoform_id, symbol, estimates, empirical_pval, empirical_FDR) |>
   dplyr::arrange(empirical_pval)
 #write.csv(sig_res, file=here("data","glinos_saturn_dtu.csv"), quote=FALSE, row.names=FALSE)
 sig_res
@@ -209,6 +213,54 @@ cpm <- assay(se, "abundance")[rowData(se)$symbol == "PDLIM7",]
 rownames(cpm) <- seq_len(nrow(cpm))
 colnames(cpm) <- se$condition
 round(cpm)
+```
+
+```{r}
+library(GenomicFeatures)
+#txdb <- makeTxDbFromGFF(here("data","flair_filter_transcripts.gtf.gz"))
+#saveDb(txdb, file=here("data","flair_filter_transcripts.sqlite"))
+txdb <- loadDb(here("data","flair_filter_transcripts.sqlite"))
+exons <- exonsBy(txdb, by="tx")
+txps <- select(txdb, keys(txdb, "TXID"), c("TXNAME","GENEID"), "TXID") |>
+  tibble::as_tibble()
+```
+
+```{r}
+sig_res |>
+  filter(symbol == "PDLIM7")
+idx <- sig_res |>
+  filter(symbol == "PDLIM7") |>
+  pull(isoform_id) |>
+  str_replace("(_ENSG.*?)_ENSG.*","\\1") |>
+  str_replace("(ENST.*?)_ENSG.*","\\1")
+idx_nums <- txps |>
+  filter(TXNAME %in% idx) |>
+  arrange(match(TXNAME, idx)) |>
+  pull(TXID)
+e <- exons[idx_nums]
+```
+
+```{r}
+library(plyranges)
+# first one has negative estimate (KD / CTRL)
+# this means it is the more common one when PTBP1 is around
+# so the other ones possible contain SE with the C/U signal upstream
+e[[1]] |>
+  filter_by_non_overlaps(e[[2]])
+e[[1]] |>
+  filter_by_non_overlaps(e[[3]])
+upstr <- e[[1]] |>
+  filter_by_non_overlaps(e[[2]]) |>
+  flank_upstream(100)
+```
+
+```{r}
+library(Biostrings)
+library(BSgenome)
+library(BSgenome.Hsapiens.UCSC.hg38)
+Hsapiens |>
+  getSeq(upstr) |>
+  RNAStringSet()
 ```
 
 ```{r}
