@@ -98,7 +98,7 @@ dds <- DESeqDataSet(gse, ~condition)
 keep <- rowSums(counts(dds) >= 10) >= 6
 table(keep)
 dds <- DESeq(dds, minRep=Inf)
-res <- results(dds)
+res <- results(dds, cooksCutoff=FALSE)
 summary(res)
 ```
 
@@ -129,7 +129,7 @@ library(Glimma)
 g <- glimmaMA(
   dds,
   groups=dds$condition,
-  anno=gene_anno[complete.cases(results(dds)),-1],
+  anno=gene_anno[,-1],
   main="Glinos et al. (2022) - PTBP1 knockdown", # title above left summary plot
   transform.counts="cpm",
   test="Wald", name="condition_exp_vs_ctrl",
@@ -230,8 +230,7 @@ txps <- AnnotationDbi::select(txdb, keys(txdb, "TXID"), c("TXNAME","GENEID"), "T
   dplyr::mutate(TXID = as.character(TXID))
 ```
 
-Now we have to do a little metadata cleanup to make 
-everything easy to compare.
+Now we have to do a little metadata cleanup to make everything easy to compare.
 
 First we clean up the isoform identifiers:
 
