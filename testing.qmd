@@ -106,7 +106,7 @@ txps <- txps |>
     TRUE ~ paste0(GENEID, "-", str_sub(TXNAME, 1, 8))
   ))
 names(exons) <- txps$new_name
-#saveRDS(exons, file="glinos_exons.rds")
+#saveRDS(exons, file=here("data","glinos_exons.rds"))
 ```
 
 ```{r}
