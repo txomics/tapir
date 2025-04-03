@@ -54,7 +54,7 @@ rownames(counts) <- rnames
 library(SummarizedExperiment)
 se <- SummarizedExperiment(list(counts = counts),
                            colData = meta)
-saveRDS(se, file=here("data", "glinos_se.rds"))
+#saveRDS(se, file=here("data", "glinos_se.rds"))
 ```
 
 ```{r}
@@ -86,10 +86,42 @@ cpm <- t(t(assay(se, "counts")) / colsums * 1e6)
 assay(se, "abundance") <- cpm
 assay(se, "length", withDimnames=FALSE) <- matrix(1000, nrow=nrow(se), ncol=ncol(se))
 se$condition <- factor(se$condition, c("ctrl","exp"))
-se_sub <- se[grepl("ENSG",rownames(se)),]
-tx2gene <- DataFrame(txid = rownames(se_sub),
-                     geneid = str_extract(rownames(se_sub), ".*_(ENSG.*)$", group=1))
-gse <- summarizeToGene(se_sub, tx2gene = tx2gene, skipRanges=TRUE)
+```
+
+```{r}
+library(GenomicFeatures)
+#txdb <- makeTxDbFromGFF(here("data","flair_filter_transcripts.gtf.gz"))
+#saveDb(txdb, file=here("data","flair_filter_transcripts.sqlite"))
+txdb <- loadDb(here("data","flair_filter_transcripts.sqlite"))
+exons <- exonsBy(txdb, by="tx")
+txps <- AnnotationDbi::select(txdb, keys(txdb, "TXID"), c("TXNAME","GENEID"), "TXID") |>
+  tibble::as_tibble() |>
+  dplyr::mutate(TXID = as.character(TXID))
+# better names for exons:
+length(exons)
+all.equal(names(exons), txps$TXID)
+txps <- txps |>
+  mutate(new_name = case_when(
+    str_detect(TXNAME,"ENST") ~ TXNAME,
+    TRUE ~ paste0(GENEID, "-", str_sub(TXNAME, 1, 8))
+  ))
+names(exons) <- txps$new_name
+#saveRDS(exons, file="glinos_exons.rds")
+```
+
+```{r}
+# subsetting to only txp/gene with complete metadata
+# and renaming to have more legible names
+rownames(se) <- str_replace(rownames(se),"_ENSG\\d+\\.\\d+$","")
+table(rownames(se) %in% txps$TXNAME) # these appear to be not genes
+txps <- txps |>
+  filter(TXNAME %in% rownames(se))
+se <- se[txps$TXNAME,]
+rownames(se) <- txps$new_name
+rowData(se)$isoform_id <- txps$new_name
+rowData(se)$gene_id <- txps$GENEID
+tx2gene <- rowData(se)[,c("isoform_id","gene_id")]
+gse <- summarizeToGene(se, tx2gene = tx2gene, skipRanges=TRUE)
 #saveRDS(gse, file=here("data","glinos_gene_counts.rds"))
 ```
 
@@ -104,10 +136,10 @@ summary(res)
 
 ```{r glinos-plotcounts}
 library(org.Hs.eg.db)
-gene_anno <- DataFrame(geneid = str_extract(rownames(dds), "(ENSG.*)\\..*", group=1),
+gene_anno <- DataFrame(gene_id = str_replace(rownames(dds),"\\.\\d+",""),
                        baseMean = round(rowData(dds)$baseMean))
-gene_anno$symbol <- org.Hs.eg.db |> mapIds(gene_anno$geneid, "SYMBOL", "ENSEMBL")
-gene_anno$symbol[is.na(gene_anno$symbol)] <- gene_anno$geneid[is.na(gene_anno$symbol)]
+gene_anno$symbol <- org.Hs.eg.db |> mapIds(gene_anno$gene_id, "SYMBOL", "ENSEMBL")
+gene_anno$symbol[is.na(gene_anno$symbol)] <- gene_anno$gene_id[is.na(gene_anno$symbol)]
 rowData(dds)$symbol <- gene_anno$symbol
 idx <- which(rowData(dds)$symbol == "PTBP1")
 plotCounts(dds, gene=idx)
@@ -140,25 +172,19 @@ htmlwidgets::saveWidget(g, here("data","glinos_ma-plot.html"))
 ```
 
 ```{r}
-# DTU filter
-se <- se_sub # removed txps not associated with genes
-rowData(se)$gene_id <- tx2gene[,"geneid"]
-```
-
-```{r}
 #| message: false
 library(plyxp)
 xp <- se |>
   new_plyxp()
 xp <- xp |>
-  mutate(rows(gene = str_extract(gene_id, "(ENSG.*)\\..*", group=1),
+  mutate(rows(gene = str_replace(gene_id, "\\.\\d+", ""),
               symbol = mapIds(org.Hs.eg.db, gene, "SYMBOL", "ENSEMBL"),
               symbol = dplyr::case_when(
                 is.na(symbol) ~ gene,
                 TRUE ~ symbol
               )))
 tab <- table(rowData(se)$gene_id)
-one_isoform_gene <- names(tab)[ tab == 1]
+one_isoform_gene <- names(tab)[ tab == 1 ]
 xp <- xp |>
   filter(rows(!gene_id %in% one_isoform_gene)) |>
   arrange(rows(gene_id))
@@ -170,8 +196,6 @@ head(table(table(rowData(xp)$gene_id))) # confirm no single isoform genes
 
 ```{r}
 se <- se(xp)
-# needed for satuRn
-rowData(se)$isoform_id <- rownames(se)
 ```
 
 ```{r}
@@ -220,40 +244,9 @@ round(cpm)
 ```
 
 ```{r}
-library(GenomicFeatures)
-#txdb <- makeTxDbFromGFF(here("data","flair_filter_transcripts.gtf.gz"))
-#saveDb(txdb, file=here("data","flair_filter_transcripts.sqlite"))
-txdb <- loadDb(here("data","flair_filter_transcripts.sqlite"))
-exons <- exonsBy(txdb, by="tx")
-txps <- AnnotationDbi::select(txdb, keys(txdb, "TXID"), c("TXNAME","GENEID"), "TXID") |>
-  tibble::as_tibble() |>
-  dplyr::mutate(TXID = as.character(TXID))
-```
-
-Now we have to do a little metadata cleanup to make everything easy to compare.
-
-First we clean up the isoform identifiers:
-
-```{r}
-sig_res <- sig_res |>
-  mutate(
-    isoform_id = str_replace(isoform_id, "(_ENSG.*?)_ENSG.*","\\1"),
-    isoform_id = str_replace(isoform_id, "(ENST.*?)_ENSG.*","\\1")
-  )
-```
-
-Next change the names of the exons:
-
-```{r}
-length(exons)
-all.equal(names(exons), txps$TXID)
-names(exons) <- txps$TXNAME
-```
-
-```{r}
 #| eval: false
 library(plyranges)
-upstr <- e[[pos_coef_txps]] |>
+upstr <- exons[[pos_coef_txps]] |>
   filter_by_non_overlaps(e[[neg_coef_txps]]) |>
   flank_upstream(100)
 ```
