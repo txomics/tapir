@@ -89,6 +89,9 @@ se$condition <- factor(se$condition, c("ctrl","exp"))
 ```
 
 ```{r}
+#| message: false
+library(dplyr)
+library(stringr)
 library(GenomicFeatures)
 #txdb <- makeTxDbFromGFF(here("data","flair_filter_transcripts.gtf.gz"))
 #saveDb(txdb, file=here("data","flair_filter_transcripts.sqlite"))
@@ -101,7 +104,7 @@ txps <- AnnotationDbi::select(txdb, keys(txdb, "TXID"), c("TXNAME","GENEID"), "T
 length(exons)
 all.equal(names(exons), txps$TXID)
 txps <- txps |>
-  mutate(new_name = case_when(
+  dplyr::mutate(new_name = case_when(
     str_detect(TXNAME,"ENST") ~ TXNAME,
     TRUE ~ paste0(GENEID, "-", str_sub(TXNAME, 1, 8))
   ))
