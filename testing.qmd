@@ -1,5 +1,9 @@
 # Statistical testing
 
+In this chapter we show differential gene expression (DGE) using DESeq2 and differential transcript usage (DTU) using satuRn.
+
+Most of the code here involves preparing the R objects for the methods. This is a bit complicated because we are importing data from files that were associated with a paper. I (Mike) would like to instead quantify this data with oarfish (with a current GENCODE + some novel transcripts) so we can demonstrate how easy it is to import with tximeta and use in R/Bioconductor pipelines. For now there are a lot of chunks that deal with data import manually.
+
 Downloading Glinos *et al.* dataset (GTEx, PTBP1 knockdown)
 
 ```{r}
@@ -29,7 +33,7 @@ if (!file.exists(path)) {
 }
 ```
 
-Assembling the object:
+Assembling the object manually from downloaded files.
 
 ```{r}
 #| eval: false
@@ -57,6 +61,8 @@ se <- SummarizedExperiment(list(counts = counts),
 #saveRDS(se, file=here("data", "glinos_se.rds"))
 ```
 
+Filtering for count of 10 across 6 or more samples.
+
 ```{r}
 #| message: false
 library(here)
@@ -67,14 +73,17 @@ table(keep)
 se <- se[keep,]
 ```
 
+Needed for `summarizeToGene` without a linked txome...
+
 ```{r}
 #| include: false
 if (tryCatch(packageVersion("tximeta") < "1.25.1", error = function(e) TRUE)) {
   message("installing dev version of tximeta")
   remotes::install_github("thelovelab/tximeta")
 }
-set.seed(5) # for jittered plots
 ```
+
+Manual data processing:
 
 ```{r}
 #| message: false
@@ -84,9 +93,12 @@ library(stringr)
 colsums <- colSums(assay(se, "counts"))
 cpm <- t(t(assay(se, "counts")) / colsums * 1e6)
 assay(se, "abundance") <- cpm
-assay(se, "length", withDimnames=FALSE) <- matrix(1000, nrow=nrow(se), ncol=ncol(se))
+# dummy lengths... no correction for length
+assay(se, "length", withDimnames=FALSE) <- matrix(1000, nrow=nrow(se), ncol=ncol(se)) 
 se$condition <- factor(se$condition, c("ctrl","exp"))
 ```
+
+Load a TxDb and produce some objects telling us about the transcripts.
 
 ```{r}
 #| message: false
@@ -112,6 +124,8 @@ names(exons) <- txps$new_name
 #saveRDS(exons, file=here("data","glinos_exons.rds"))
 ```
 
+Summarize to gene level:
+
 ```{r}
 # subsetting to only txp/gene with complete metadata
 # and renaming to have more legible names
@@ -128,6 +142,8 @@ gse <- summarizeToGene(se, tx2gene = tx2gene, skipRanges=TRUE)
 #saveRDS(gse, file=here("data","glinos_gene_counts.rds"))
 ```
 
+DESeq2 DGE:
+
 ```{r PCA}
 dds <- DESeqDataSet(gse, ~condition)
 keep <- rowSums(counts(dds) >= 10) >= 6
@@ -137,6 +153,8 @@ res <- results(dds, cooksCutoff=FALSE)
 summary(res)
 ```
 
+Add gene symbols manually, make a simple plot of PTBP1 (the knocked-down gene).
+
 ```{r glinos-plotcounts}
 library(org.Hs.eg.db)
 gene_anno <- DataFrame(gene_id = str_replace(rownames(dds),"\\.\\d+",""),
@@ -145,8 +163,11 @@ gene_anno$symbol <- org.Hs.eg.db |> mapIds(gene_anno$gene_id, "SYMBOL", "ENSEMBL
 gene_anno$symbol[is.na(gene_anno$symbol)] <- gene_anno$gene_id[is.na(gene_anno$symbol)]
 rowData(dds)$symbol <- gene_anno$symbol
 idx <- which(rowData(dds)$symbol == "PTBP1")
+set.seed(5) # for jittered plots
 plotCounts(dds, gene=idx)
 ```
+
+PCA plot:
 
 ```{r glinos-pca}
 vsd <- vst(dds, blind=FALSE)
@@ -157,6 +178,8 @@ plotPCA(vsd)
 #saveRDS(dds, file=here("data", "glinos_deseq2_gene.rds"))
 #saveRDS(vsd, file=here("data", "glinos_vst_gene.rds"))
 ```
+
+Make a Glimma report:
 
 ```{r}
 #| eval: false
@@ -173,6 +196,8 @@ g <- glimmaMA(
 )
 htmlwidgets::saveWidget(g, here("data","glinos_ma-plot.html"))
 ```
+
+Now, let's look for DTU, first we do some processing of the SummarizedExperiment with plyxp.
 
 ```{r}
 #| message: false
@@ -197,9 +222,13 @@ xp <- xp |>
 head(table(table(rowData(xp)$gene_id))) # confirm no single isoform genes
 ```
 
+Extract the SE after we are done with plyxp filtering.
+
 ```{r}
 se <- se(xp)
 ```
+
+Run satuRn for DTU, first fit the model:
 
 ```{r}
 # 5 seconds
@@ -228,6 +257,8 @@ se <- satuRn::testDTU(
 #saveRDS(se, file=here("data","glinos_saturn_dtu.rds"))
 ```
 
+Extract test results:
+
 ```{r}
 sig_res <- rowData(se)[["fitDTUResult_exp_vs_ctrl"]] |>
   tibble::as_tibble() |>
@@ -239,29 +270,13 @@ sig_res <- rowData(se)[["fitDTUResult_exp_vs_ctrl"]] |>
 sig_res
 ```
 
+As a demonstration of DTU, look at counts for the top gene:
+
 ```{r}
 cpm <- assay(se, "abundance")[rowData(se)$symbol == "PDLIM7",]
 rownames(cpm) <- seq_len(nrow(cpm))
 colnames(cpm) <- se$condition
 round(cpm)
-```
-
-```{r}
-#| eval: false
-library(plyranges)
-upstr <- exons[[pos_coef_txps]] |>
-  filter_by_non_overlaps(e[[neg_coef_txps]]) |>
-  flank_upstream(100)
-```
-
-```{r}
-#| eval: false
-library(Biostrings)
-library(BSgenome)
-library(BSgenome.Hsapiens.UCSC.hg38)
-Hsapiens |>
-  getSeq(upstr) |>
-  RNAStringSet()
 ```
 
 ```{r}

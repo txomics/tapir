@@ -190,6 +190,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
+<p>In this chapter we show differential gene expression (DGE) using DESeq2 and differential transcript usage (DTU) using satuRn.</p>
+<p>Most of the code here involves preparing the R objects for the methods. This is a bit complicated because we are importing data from files that were associated with a paper. I (Mike) would like to instead quantify this data with oarfish (with a current GENCODE + some novel transcripts) so we can demonstrate how easy it is to import with tximeta and use in R/Bioconductor pipelines. For now there are a lot of chunks that deal with data import manually.</p>
 <p>Downloading Glinos <em>et al.</em> dataset (GTEx, PTBP1 knockdown)</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
@@ -216,7 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(url, path)</span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Assembling the object:</p>
+<p>Assembling the object manually from downloaded files.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -239,6 +241,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">colData =</span> meta)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(se, file=here("data", "glinos_se.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Filtering for count of 10 across 6 or more samples.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SummarizedExperiment)</span>
@@ -252,6 +255,8 @@ FALSE  TRUE
 </div>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> se[keep,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Needed for <code>summarizeToGene</code> without a linked txome…</p>
+<p>Manual data processing:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DESeq2)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tximeta)</span>
@@ -259,9 +264,11 @@ FALSE  TRUE
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>colsums <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">assay</span>(se, <span class="st">"counts"</span>))</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>cpm <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">t</span>(<span class="fu">assay</span>(se, <span class="st">"counts"</span>)) <span class="sc">/</span> colsums <span class="sc">*</span> <span class="fl">1e6</span>)</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(se, <span class="st">"abundance"</span>) <span class="ot">&lt;-</span> cpm</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(se, <span class="st">"length"</span>, <span class="at">withDimnames=</span><span class="cn">FALSE</span>) <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1000</span>, <span class="at">nrow=</span><span class="fu">nrow</span>(se), <span class="at">ncol=</span><span class="fu">ncol</span>(se))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>se<span class="sc">$</span>condition <span class="ot">&lt;-</span> <span class="fu">factor</span>(se<span class="sc">$</span>condition, <span class="fu">c</span>(<span class="st">"ctrl"</span>,<span class="st">"exp"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># dummy lengths... no correction for length</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(se, <span class="st">"length"</span>, <span class="at">withDimnames=</span><span class="cn">FALSE</span>) <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1000</span>, <span class="at">nrow=</span><span class="fu">nrow</span>(se), <span class="at">ncol=</span><span class="fu">ncol</span>(se)) </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>se<span class="sc">$</span>condition <span class="ot">&lt;-</span> <span class="fu">factor</span>(se<span class="sc">$</span>condition, <span class="fu">c</span>(<span class="st">"ctrl"</span>,<span class="st">"exp"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Load a TxDb and produce some objects telling us about the transcripts.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
@@ -290,6 +297,7 @@ FALSE  TRUE
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(exons) <span class="ot">&lt;-</span> txps<span class="sc">$</span>new_name</span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(exons, file=here("data","glinos_exons.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Summarize to gene level:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># subsetting to only txp/gene with complete metadata</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and renaming to have more legible names</span></span>
@@ -319,6 +327,7 @@ FALSE  TRUE
 </div>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(gse, file=here("data","glinos_gene_counts.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>DESeq2 DGE:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dds <span class="ot">&lt;-</span> <span class="fu">DESeqDataSet</span>(gse, <span class="sc">~</span>condition)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -365,6 +374,7 @@ low counts [2]     : 0, 0%
 [2] see 'independentFiltering' argument of ?results</code></pre>
 </div>
 </div>
+<p>Add gene symbols manually, make a simple plot of PTBP1 (the knocked-down gene).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(org.Hs.eg.db)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -379,11 +389,13 @@ low counts [2]     : 0, 0%
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>gene_anno<span class="sc">$</span>symbol[<span class="fu">is.na</span>(gene_anno<span class="sc">$</span>symbol)] <span class="ot">&lt;-</span> gene_anno<span class="sc">$</span>gene_id[<span class="fu">is.na</span>(gene_anno<span class="sc">$</span>symbol)]</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rowData</span>(dds)<span class="sc">$</span>symbol <span class="ot">&lt;-</span> gene_anno<span class="sc">$</span>symbol</span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>idx <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">rowData</span>(dds)<span class="sc">$</span>symbol <span class="sc">==</span> <span class="st">"PTBP1"</span>)</span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plotCounts</span>(dds, <span class="at">gene=</span>idx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5</span>) <span class="co"># for jittered plots</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plotCounts</span>(dds, <span class="at">gene=</span>idx)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="testing_files/figure-html/glinos-plotcounts-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>PCA plot:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>vsd <span class="ot">&lt;-</span> <span class="fu">vst</span>(dds, <span class="at">blind=</span><span class="cn">FALSE</span>)</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCA</span>(vsd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -398,6 +410,7 @@ low counts [2]     : 0, 0%
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(dds, file=here("data", "glinos_deseq2_gene.rds"))</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(vsd, file=here("data", "glinos_vst_gene.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Make a Glimma report:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Glimma)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> <span class="fu">glimmaMA</span>(</span>
@@ -412,6 +425,7 @@ low counts [2]     : 0, 0%
 <span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>htmlwidgets<span class="sc">::</span><span class="fu">saveWidget</span>(g, <span class="fu">here</span>(<span class="st">"data"</span>,<span class="st">"glinos_ma-plot.html"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Now, let’s look for DTU, first we do some processing of the SummarizedExperiment with plyxp.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyxp)</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> se <span class="sc">|&gt;</span></span>
@@ -437,9 +451,11 @@ low counts [2]     : 0, 0%
 1957  780  305  111   73   40 </code></pre>
 </div>
 </div>
+<p>Extract the SE after we are done with plyxp filtering.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> <span class="fu">se</span>(xp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Run satuRn for DTU, first fit the model:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 5 seconds</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(satuRn)</span>
@@ -479,6 +495,7 @@ Levels exp_vs_ctrl
 </div>
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">#saveRDS(se, file=here("data","glinos_saturn_dtu.rds"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Extract test results:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>sig_res <span class="ot">&lt;-</span> <span class="fu">rowData</span>(se)[[<span class="st">"fitDTUResult_exp_vs_ctrl"</span>]] <span class="sc">|&gt;</span></span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
@@ -505,6 +522,7 @@ Levels exp_vs_ctrl
 # ℹ 51 more rows</code></pre>
 </div>
 </div>
+<p>As a demonstration of DTU, look at counts for the top gene:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>cpm <span class="ot">&lt;-</span> <span class="fu">assay</span>(se, <span class="st">"abundance"</span>)[<span class="fu">rowData</span>(se)<span class="sc">$</span>symbol <span class="sc">==</span> <span class="st">"PDLIM7"</span>,]</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(cpm) <span class="ot">&lt;-</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(cpm))</span>
@@ -521,21 +539,7 @@ Levels exp_vs_ctrl
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyranges)</span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>upstr <span class="ot">&lt;-</span> exons[[pos_coef_txps]] <span class="sc">|&gt;</span></span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_by_non_overlaps</span>(e[[neg_coef_txps]]) <span class="sc">|&gt;</span></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">flank_upstream</span>(<span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Biostrings)</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BSgenome)</span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BSgenome.Hsapiens.UCSC.hg38)</span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>Hsapiens <span class="sc">|&gt;</span></span>
-<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getSeq</span>(upstr) <span class="sc">|&gt;</span></span>
-<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">RNAStringSet</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>R version 4.4.2 (2024-10-31)
 Platform: aarch64-apple-darwin20
