@@ -73,36 +73,36 @@ table(keep)
 se <- se[keep,]
 ```
 
-Needed for `summarizeToGene` without a linked txome...
-
-```{r}
-#| include: false
-if (tryCatch(packageVersion("tximeta") < "1.25.1", error = function(e) TRUE)) {
-  message("installing dev version of tximeta")
-  remotes::install_github("thelovelab/tximeta")
-}
-```
-
 Manual data processing:
 
 ```{r}
 #| message: false
 library(DESeq2)
 library(tximeta)
-library(stringr)
 colsums <- colSums(assay(se, "counts"))
 cpm <- t(t(assay(se, "counts")) / colsums * 1e6)
 assay(se, "abundance") <- cpm
 # dummy lengths... no correction for length
-assay(se, "length", withDimnames=FALSE) <- matrix(1000, nrow=nrow(se), ncol=ncol(se)) 
-se$condition <- factor(se$condition, c("ctrl","exp"))
+assay(se, "length", withDimnames=FALSE) <- matrix(1000, nrow=nrow(se), ncol=ncol(se))
+```
+
+```{r}
+#| message: false
+library(dplyr)
+se$condition <- case_when(
+    se$condition == "ctrl" ~ "WT",
+    se$condition == "exp" ~ "KD"
+)
+# note that protein knockdown will be used as reference 
+# with this choice of factor levels
+se$condition <- factor(se$condition, c("KD","WT"))
+se$condition
 ```
 
 Load a TxDb and produce some objects telling us about the transcripts.
 
 ```{r}
 #| message: false
-library(dplyr)
 library(stringr)
 library(GenomicFeatures)
 #txdb <- makeTxDbFromGFF(here("data","flair_filter_transcripts.gtf.gz"))
@@ -190,7 +190,7 @@ g <- glimmaMA(
   anno=gene_anno[,-1],
   main="Glinos et al. (2022) - PTBP1 knockdown", # title above left summary plot
   transform.counts="cpm",
-  test="Wald", name="condition_exp_vs_ctrl",
+  test="Wald", name="condition_WT_vs_KD",
   independentFiltering=FALSE,
   cooksCutoff=FALSE
 )
@@ -236,12 +236,14 @@ library(satuRn)
 se <- satuRn::fitDTU(se, formula=~0 + condition)
 ```
 
+Below we compare WT (wildtype) to KD (knockdown), which is perhaps the reverse of how one might expect to define the comparison. Typically wildtype or control is used as the reference that the experimental condition is compared to. In this case, we use the knockdown as the reference, as it provides us with log2 fold changes *with respect to the activity of the protein*. For example, a transcript with a positive coefficient will be more likely to be expressed when the protein is abundant, and a transcript with a negative coefficient will be less likely to be expressed when the protein is abundant. Exons that appear in transcripts with negative coefficients may be *down-regulated* by the protein.
+
 ```{r}
 design <- model.matrix(~0 + condition, colData(se))
 colnames(design)
 colnames(design) <- levels(se$condition)
 L <- limma::makeContrasts(
-  exp_vs_ctrl = exp - ctrl,
+  WT_vs_KD = WT - KD,
   levels = design
 )
 L # contrast matrix
@@ -260,7 +262,7 @@ se <- satuRn::testDTU(
 Extract test results:
 
 ```{r}
-sig_res <- rowData(se)[["fitDTUResult_exp_vs_ctrl"]] |>
+sig_res <- rowData(se)[["fitDTUResult_WT_vs_KD"]] |>
   tibble::as_tibble() |>
   dplyr::bind_cols(as.data.frame(rowData(se)[,1:4])) |>
   dplyr::filter(empirical_FDR < .1) |>
