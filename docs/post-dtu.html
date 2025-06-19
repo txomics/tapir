@@ -253,63 +253,110 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 # ℹ 67 more rows</code></pre>
 </div>
 </div>
-<p>Obtain a GRanges of all the exons present in significant DTU. First, we obtain the GRangesList of all the significant transcripts. Then, we unlist the GRangesList into a GRanges with all the exons present in the significant transcripts.</p>
+<p>Obtain a GRanges of all the exons present in significant DTU. First, we flatten-out the GRangesList of all the transcripts and include a column to identify if an exon is internal (i.e.&nbsp;is not the first or last in the isoform) or not.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyranges)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>sig_transcripts <span class="ot">&lt;-</span> exons[<span class="fu">names</span>(exons) <span class="sc">%in%</span> sig_res<span class="sc">$</span>isoform_id] <span class="co"># GRangesList </span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Efficiently annotate if exon is internal or not (needed later for exon-level detection)</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>sig_transcripts<span class="sc">@</span>unlistData<span class="sc">$</span>internal <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>sig_transcripts<span class="sc">@</span>unlistData<span class="sc">$</span>internal[<span class="fu">start</span>(sig_transcripts<span class="sc">@</span>partitioning)] <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sig_transcripts<span class="sc">@</span>unlistData<span class="sc">$</span>internal[<span class="fu">end</span>(sig_transcripts<span class="sc">@</span>partitioning)] <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> <span class="fu">unlist</span>(sig_transcripts) <span class="co">#GRanges</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>flat_exons <span class="ot">&lt;-</span> <span class="fu">unlist</span>(exons) <span class="co">#GRanges</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include 'isoform_id' column </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>flat_exons<span class="sc">$</span>isoform_id <span class="ot">&lt;-</span> <span class="fu">names</span>(flat_exons)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#include 'internal' column</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(flat_exons<span class="sc">$</span>isoform_id)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>flat_exons <span class="ot">&lt;-</span> flat_exons <span class="sc">|&gt;</span> </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">mutate</span>(</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                        <span class="at">nexons =</span> tab[isoform_id], </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                        <span class="at">internal =</span> exon_rank <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">&amp;</span> exon_rank <span class="sc">&lt;</span> nexons</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                      )</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>flat_exons </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>GRanges object with 921 ranges and 4 metadata columns:
-                       seqnames              ranges strand |   exon_id
-                          &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
-  ENST00000315554.12-1     chr1   22052707-22052742      + |      1503
-  ENST00000315554.12-1     chr1   22078429-22078583      + |      1505
-  ENST00000315554.12-1     chr1   22081722-22081794      + |      1507
-  ENST00000315554.12-1     chr1   22086439-22086548      + |      1508
-  ENST00000315554.12-1     chr1   22086669-22086866      + |      1509
-                   ...      ...                 ...    ... .       ...
-     ENST00000216879.8    chr20     1445666-1445830      - |    211007
-     ENST00000216879.8    chr20     1443511-1443911      - |    211006
-     ENST00000451301.5     chrX 103686631-103686705      - |    226429
-     ENST00000451301.5     chrX 103685171-103685260      - |    226428
-     ENST00000451301.5     chrX 103675496-103677051      - |    226423
-                         exon_name exon_rank  internal
-                       &lt;character&gt; &lt;integer&gt; &lt;logical&gt;
-  ENST00000315554.12-1        &lt;NA&gt;         1     FALSE
-  ENST00000315554.12-1        &lt;NA&gt;         2      TRUE
-  ENST00000315554.12-1        &lt;NA&gt;         3      TRUE
-  ENST00000315554.12-1        &lt;NA&gt;         4      TRUE
-  ENST00000315554.12-1        &lt;NA&gt;         5      TRUE
-                   ...         ...       ...       ...
-     ENST00000216879.8        &lt;NA&gt;         8      TRUE
-     ENST00000216879.8        &lt;NA&gt;         9     FALSE
-     ENST00000451301.5        &lt;NA&gt;         1     FALSE
-     ENST00000451301.5        &lt;NA&gt;         2      TRUE
-     ENST00000451301.5        &lt;NA&gt;         3     FALSE
+<pre><code>GRanges object with 868829 ranges and 7 metadata columns:
+                                        seqnames        ranges strand |
+                                           &lt;Rle&gt;     &lt;IRanges&gt;  &lt;Rle&gt; |
+             ENSG00000237491.8-c0e70edb     chr1 785782-787672      + |
+                      ENST00000326734.2     chr1 817713-818202      + |
+                      ENST00000326734.2     chr1 818723-821358      + |
+             ENSG00000228794.8-5a74a94f     chr1 827608-827775      + |
+             ENSG00000228794.8-5a74a94f     chr1 829003-829104      + |
+                                    ...      ...           ...    ... .
+  chrM:12000_ENSG00000198786.2-ae9cf68f     chrM   12266-15326      + |
+  chrM:12000_ENSG00000198786.2-3aadce2b     chrM   12266-15707      + |
+                     chrM:1000-d5c15fee     chrM     1602-5511      - |
+                     chrM:3000-ed670af4     chrM     3305-5121      - |
+                     chrM:3000-53ee06de     chrM     3305-5511      - |
+                                          exon_id   exon_name exon_rank
+                                        &lt;integer&gt; &lt;character&gt; &lt;integer&gt;
+             ENSG00000237491.8-c0e70edb         1        &lt;NA&gt;         1
+                      ENST00000326734.2         2        &lt;NA&gt;         1
+                      ENST00000326734.2         3        &lt;NA&gt;         2
+             ENSG00000228794.8-5a74a94f         4        &lt;NA&gt;         1
+             ENSG00000228794.8-5a74a94f         9        &lt;NA&gt;         2
+                                    ...       ...         ...       ...
+  chrM:12000_ENSG00000198786.2-ae9cf68f    227899        &lt;NA&gt;         1
+  chrM:12000_ENSG00000198786.2-3aadce2b    227900        &lt;NA&gt;         1
+                     chrM:1000-d5c15fee    227901        &lt;NA&gt;         1
+                     chrM:3000-ed670af4    227902        &lt;NA&gt;         1
+                     chrM:3000-53ee06de    227903        &lt;NA&gt;         1
+                                                    isoform_id
+                                                   &lt;character&gt;
+             ENSG00000237491.8-c0e70edb ENSG00000237491.8-c0..
+                      ENST00000326734.2      ENST00000326734.2
+                      ENST00000326734.2      ENST00000326734.2
+             ENSG00000228794.8-5a74a94f ENSG00000228794.8-5a..
+             ENSG00000228794.8-5a74a94f ENSG00000228794.8-5a..
+                                    ...                    ...
+  chrM:12000_ENSG00000198786.2-ae9cf68f chrM:12000_ENSG00000..
+  chrM:12000_ENSG00000198786.2-3aadce2b chrM:12000_ENSG00000..
+                     chrM:1000-d5c15fee     chrM:1000-d5c15fee
+                     chrM:3000-ed670af4     chrM:3000-ed670af4
+                     chrM:3000-53ee06de     chrM:3000-53ee06de
+                                                                  nexons.Var1
+                                                                     &lt;factor&gt;
+             ENSG00000237491.8-c0e70edb            ENSG00000237491.8-c0e70edb
+                      ENST00000326734.2            ENST00000326734.2         
+                      ENST00000326734.2            ENST00000326734.2         
+             ENSG00000228794.8-5a74a94f            ENSG00000228794.8-5a74a94f
+             ENSG00000228794.8-5a74a94f            ENSG00000228794.8-5a74a94f
+                                    ...                                   ...
+  chrM:12000_ENSG00000198786.2-ae9cf68f chrM:12000_ENSG00000198786.2-ae9cf68f
+  chrM:12000_ENSG00000198786.2-3aadce2b chrM:12000_ENSG00000198786.2-3aadce2b
+                     chrM:1000-d5c15fee chrM:1000-d5c15fee                   
+                     chrM:3000-ed670af4 chrM:3000-ed670af4                   
+                     chrM:3000-53ee06de chrM:3000-53ee06de                   
+                                        nexons.Freq internal
+                                          &lt;integer&gt;  &lt;array&gt;
+             ENSG00000237491.8-c0e70edb           1    FALSE
+                      ENST00000326734.2           2    FALSE
+                      ENST00000326734.2           2    FALSE
+             ENSG00000228794.8-5a74a94f           4    FALSE
+             ENSG00000228794.8-5a74a94f           4     TRUE
+                                    ...         ...      ...
+  chrM:12000_ENSG00000198786.2-ae9cf68f           1    FALSE
+  chrM:12000_ENSG00000198786.2-3aadce2b           1    FALSE
+                     chrM:1000-d5c15fee           1    FALSE
+                     chrM:3000-ed670af4           1    FALSE
+                     chrM:3000-53ee06de           1    FALSE
   -------
   seqinfo: 25 sequences (1 circular) from an unspecified genome; no seqlengths</code></pre>
 </div>
 </div>
 <p>To perform exon-level detection events, we include a metadata column that will tell us if a given exon has a - or + coefficient (from satuRn analysis).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#include coef +/- column from the DTU analysis saturn </span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>coef <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>estimates[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>sign <span class="ot">&lt;-</span> <span class="fu">sign</span>(flat_sig_exons<span class="sc">$</span>coef)</span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter to keep only significant DTU transcripts </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_exons <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">filter</span>( isoform_id <span class="sc">%in%</span> sig_res<span class="sc">$</span>isoform_id)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include gene symbol for each transcript name </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>symbol <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>symbol[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#include isoform ID for each transcript name </span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>isoform <span class="ot">&lt;-</span> <span class="fu">names</span>(flat_sig_exons)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include coef +/- column from the DTU analysis saturn </span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>coef <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>estimates[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>sign <span class="ot">&lt;-</span> <span class="fu">sign</span>(flat_sig_exons<span class="sc">$</span>coef)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#include gene symbol for each transcript name </span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>symbol <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>symbol[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>GRanges object with 921 ranges and 8 metadata columns:
+<pre><code>GRanges object with 921 ranges and 10 metadata columns:
                        seqnames              ranges strand |   exon_id
                           &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
   ENST00000315554.12-1     chr1   22052707-22052742      + |      1503
@@ -323,32 +370,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
      ENST00000451301.5     chrX 103686631-103686705      - |    226429
      ENST00000451301.5     chrX 103685171-103685260      - |    226428
      ENST00000451301.5     chrX 103675496-103677051      - |    226423
-                         exon_name exon_rank  internal      coef      sign
-                       &lt;character&gt; &lt;integer&gt; &lt;logical&gt; &lt;numeric&gt; &lt;numeric&gt;
-  ENST00000315554.12-1        &lt;NA&gt;         1     FALSE  -1.84845        -1
-  ENST00000315554.12-1        &lt;NA&gt;         2      TRUE  -1.84845        -1
-  ENST00000315554.12-1        &lt;NA&gt;         3      TRUE  -1.84845        -1
-  ENST00000315554.12-1        &lt;NA&gt;         4      TRUE  -1.84845        -1
-  ENST00000315554.12-1        &lt;NA&gt;         5      TRUE  -1.84845        -1
-                   ...         ...       ...       ...       ...       ...
-     ENST00000216879.8        &lt;NA&gt;         8      TRUE   1.30549         1
-     ENST00000216879.8        &lt;NA&gt;         9     FALSE   1.30549         1
-     ENST00000451301.5        &lt;NA&gt;         1     FALSE  -2.08015        -1
-     ENST00000451301.5        &lt;NA&gt;         2      TRUE  -2.08015        -1
-     ENST00000451301.5        &lt;NA&gt;         3     FALSE  -2.08015        -1
-                            symbol              isoform
-                       &lt;character&gt;          &lt;character&gt;
-  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
-  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
-  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
-  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
-  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
-                   ...         ...                  ...
-     ENST00000216879.8      NSFL1C    ENST00000216879.8
-     ENST00000216879.8      NSFL1C    ENST00000216879.8
-     ENST00000451301.5     MORF4L2    ENST00000451301.5
-     ENST00000451301.5     MORF4L2    ENST00000451301.5
-     ENST00000451301.5     MORF4L2    ENST00000451301.5
+                         exon_name exon_rank           isoform_id
+                       &lt;character&gt; &lt;integer&gt;          &lt;character&gt;
+  ENST00000315554.12-1        &lt;NA&gt;         1 ENST00000315554.12-1
+  ENST00000315554.12-1        &lt;NA&gt;         2 ENST00000315554.12-1
+  ENST00000315554.12-1        &lt;NA&gt;         3 ENST00000315554.12-1
+  ENST00000315554.12-1        &lt;NA&gt;         4 ENST00000315554.12-1
+  ENST00000315554.12-1        &lt;NA&gt;         5 ENST00000315554.12-1
+                   ...         ...       ...                  ...
+     ENST00000216879.8        &lt;NA&gt;         8    ENST00000216879.8
+     ENST00000216879.8        &lt;NA&gt;         9    ENST00000216879.8
+     ENST00000451301.5        &lt;NA&gt;         1    ENST00000451301.5
+     ENST00000451301.5        &lt;NA&gt;         2    ENST00000451301.5
+     ENST00000451301.5        &lt;NA&gt;         3    ENST00000451301.5
+                                nexons.Var1 nexons.Freq internal      coef
+                                   &lt;factor&gt;   &lt;integer&gt;  &lt;array&gt; &lt;numeric&gt;
+  ENST00000315554.12-1 ENST00000315554.12-1           6    FALSE  -1.84845
+  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
+  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
+  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
+  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
+                   ...                  ...         ...      ...       ...
+     ENST00000216879.8    ENST00000216879.8           9     TRUE   1.30549
+     ENST00000216879.8    ENST00000216879.8           9    FALSE   1.30549
+     ENST00000451301.5    ENST00000451301.5           3    FALSE  -2.08015
+     ENST00000451301.5    ENST00000451301.5           3     TRUE  -2.08015
+     ENST00000451301.5    ENST00000451301.5           3    FALSE  -2.08015
+                            sign      symbol
+                       &lt;numeric&gt; &lt;character&gt;
+  ENST00000315554.12-1        -1       CDC42
+  ENST00000315554.12-1        -1       CDC42
+  ENST00000315554.12-1        -1       CDC42
+  ENST00000315554.12-1        -1       CDC42
+  ENST00000315554.12-1        -1       CDC42
+                   ...       ...         ...
+     ENST00000216879.8         1      NSFL1C
+     ENST00000216879.8         1      NSFL1C
+     ENST00000451301.5        -1     MORF4L2
+     ENST00000451301.5        -1     MORF4L2
+     ENST00000451301.5        -1     MORF4L2
   -------
   seqinfo: 25 sequences (1 circular) from an unspecified genome; no seqlengths</code></pre>
 </div>
@@ -361,7 +421,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">key =</span> <span class="fu">paste0</span>(isoform, <span class="st">"-"</span>, exon_rank))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">key =</span> <span class="fu">paste0</span>(isoform_id, <span class="st">"-"</span>, exon_rank))</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) split + vs – coef sign</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>pos_exons  <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="dv">1</span>)</span>
@@ -374,12 +434,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(internal <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) detect left and right exons from candidates</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>left_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform, <span class="st">"-"</span>, </span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>left_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform_id, <span class="st">"-"</span>, </span>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                    downreg_candidates<span class="sc">$</span>exon_rank<span class="dv">-1</span>)</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>left_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> left_keys)</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>right_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform, <span class="st">"-"</span>, </span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>right_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform_id, <span class="st">"-"</span>, </span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                     downreg_candidates<span class="sc">$</span>exon_rank<span class="sc">+</span><span class="dv">1</span>)</span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>right_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> right_keys)</span>

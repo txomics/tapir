@@ -29,34 +29,42 @@ sig_res
 
 ```
 
-Obtain a GRanges of all the exons present in significant DTU. First, we obtain the GRangesList of all the significant transcripts. Then, we unlist the GRangesList into a GRanges with all the exons present in the significant transcripts.
+Obtain a GRanges of all the exons present in significant DTU. First, we flatten-out the GRangesList of all the transcripts and include a column to identify if an exon is internal (i.e. is not the first or last in the isoform) or not.
 
 ```{r}
 #| message: false
-#| 
-library(plyranges)
-sig_transcripts <- exons[names(exons) %in% sig_res$isoform_id] # GRangesList 
 
-# Efficiently annotate if exon is internal or not (needed later for exon-level detection)
-sig_transcripts@unlistData$internal <- TRUE
-sig_transcripts@unlistData$internal[start(sig_transcripts@partitioning)] <- FALSE
-sig_transcripts@unlistData$internal[end(sig_transcripts@partitioning)] <- FALSE
-  
-flat_sig_exons <- unlist(sig_transcripts) #GRanges
-flat_sig_exons
+library(plyranges)
+
+flat_exons <- unlist(exons) #GRanges
+
+#include 'isoform_id' column 
+flat_exons$isoform_id <- names(flat_exons)
+
+#include 'internal' column
+tab <- table(flat_exons$isoform_id)
+flat_exons <- flat_exons |> 
+                      mutate(
+                        nexons = tab[isoform_id], 
+                        internal = exon_rank > 1 & exon_rank < nexons
+                      )
+flat_exons 
 ```
 
 To perform exon-level detection events, we include a metadata column that will tell us if a given exon has a - or + coefficient (from satuRn analysis).
 
 ```{r}
+#filter to keep only significant DTU transcripts 
+flat_sig_exons <- flat_exons |>
+                       filter( isoform_id %in% sig_res$isoform_id)
+
 #include coef +/- column from the DTU analysis saturn 
 flat_sig_exons$coef <- sig_res$estimates[match(names(flat_sig_exons), sig_res$isoform_id)]
 flat_sig_exons$sign <- sign(flat_sig_exons$coef)
 
 #include gene symbol for each transcript name 
 flat_sig_exons$symbol <- sig_res$symbol[match(names(flat_sig_exons), sig_res$isoform_id)]
-#include isoform ID for each transcript name 
-flat_sig_exons$isoform <- names(flat_sig_exons)
+
 flat_sig_exons
 ```
 
@@ -73,7 +81,7 @@ We want to get exons that are present in the KD condition (sign -1) that are not
 
 library(dplyr)
 flat_sig_exons <- flat_sig_exons |>
-    dplyr::mutate(key = paste0(isoform, "-", exon_rank))
+    dplyr::mutate(key = paste0(isoform_id, "-", exon_rank))
 
 # 1) split + vs – coef sign
 pos_exons  <- flat_sig_exons |> filter(sign ==  1)
@@ -86,12 +94,12 @@ downreg_candidates <- neg_exons |>
   filter(internal == TRUE)
 
 # 3) detect left and right exons from candidates
-left_keys <- paste0(downreg_candidates$isoform, "-", 
+left_keys <- paste0(downreg_candidates$isoform_id, "-", 
                     downreg_candidates$exon_rank-1)
 left_exons <- flat_sig_exons |>
   filter(key %in% left_keys)
 
-right_keys <- paste0(downreg_candidates$isoform, "-", 
+right_keys <- paste0(downreg_candidates$isoform_id, "-", 
                      downreg_candidates$exon_rank+1)
 right_exons <- flat_sig_exons |>
   filter(key %in% right_keys)
