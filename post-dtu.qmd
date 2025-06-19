@@ -1,0 +1,198 @@
+# Post DTU Analysis
+
+In this chapter, we show how to explore the results from the DTU analysis performed using satuRn (see Statistical testing chapter).
+
+Load needed objects computed in Statistical testing chapter
+
+```{r}
+#| message: false
+
+library(here)
+library(SummarizedExperiment)
+# Load SummarizeExperiment with DTU results
+se <- readRDS(here::here("data", "glinos_saturn_dtu.rds"))
+# Load exons 
+exons <- readRDS(here::here("data", "glinos_exons.rds")) 
+```
+
+Extract test results
+
+```{r}
+sig_res <- rowData(se)[["fitDTUResult_WT_vs_KD"]] |>
+  tibble::as_tibble() |>
+  dplyr::bind_cols(as.data.frame(rowData(se)[,1:4])) |>
+  dplyr::filter(empirical_FDR < .1) |>
+  dplyr::select(gene_id, isoform_id, symbol, estimates, empirical_pval, empirical_FDR) |>
+  dplyr::arrange(empirical_pval)
+
+sig_res
+
+```
+
+Obtain a GRanges of all the exons present in significant DTU. First, we obtain the GRangesList of all the significant transcripts. Then, we unlist the GRangesList into a GRanges with all the exons present in the significant transcripts.
+
+```{r}
+#| message: false
+#| 
+library(plyranges)
+sig_transcripts <- exons[names(exons) %in% sig_res$isoform_id] # GRangesList 
+
+# Efficiently annotate if exon is internal or not (needed later for exon-level detection)
+sig_transcripts@unlistData$internal <- TRUE
+sig_transcripts@unlistData$internal[start(sig_transcripts@partitioning)] <- FALSE
+sig_transcripts@unlistData$internal[end(sig_transcripts@partitioning)] <- FALSE
+  
+flat_sig_exons <- unlist(sig_transcripts) #GRanges
+flat_sig_exons
+```
+
+To perform exon-level detection events, we include a metadata column that will tell us if a given exon has a - or + coefficient (from satuRn analysis).
+
+```{r}
+#include coef +/- column from the DTU analysis saturn 
+flat_sig_exons$coef <- sig_res$estimates[match(names(flat_sig_exons), sig_res$isoform_id)]
+flat_sig_exons$sign <- sign(flat_sig_exons$coef)
+
+#include gene symbol for each transcript name 
+flat_sig_exons$symbol <- sig_res$symbol[match(names(flat_sig_exons), sig_res$isoform_id)]
+#include isoform ID for each transcript name 
+flat_sig_exons$isoform <- names(flat_sig_exons)
+flat_sig_exons
+```
+
+## Detect skipped-exon events
+
+We are looking to detect exons that were skipped-out due to PTBP1 (down-regulated exons). A transcript with a positive coefficient will be more likely to be expressed when the protein is abundant, and a transcript with a negative coefficient will be less likely to be expressed when the protein is abundant.
+
+Exons that appear in transcripts with negative coefficients and that do not appear in transcripts with positive coefficients may be *down-regulated* by the protein.
+
+We want to get exons that are present in the KD condition (sign -1) that are not present in the WD condition (sign -1)
+
+```{r}
+#| message: false
+
+library(dplyr)
+flat_sig_exons <- flat_sig_exons |>
+    dplyr::mutate(key = paste0(isoform, "-", exon_rank))
+
+# 1) split + vs – coef sign
+pos_exons  <- flat_sig_exons |> filter(sign ==  1)
+neg_exons <- flat_sig_exons |> filter(sign ==  -1)
+
+# 2) filter non overlaps 
+downreg_candidates <- neg_exons |>
+  filter_by_non_overlaps_directed(pos_exons) |>
+  mutate(SE = TRUE) |>
+  filter(internal == TRUE)
+
+# 3) detect left and right exons from candidates
+left_keys <- paste0(downreg_candidates$isoform, "-", 
+                    downreg_candidates$exon_rank-1)
+left_exons <- flat_sig_exons |>
+  filter(key %in% left_keys)
+
+right_keys <- paste0(downreg_candidates$isoform, "-", 
+                     downreg_candidates$exon_rank+1)
+right_exons <- flat_sig_exons |>
+  filter(key %in% right_keys)
+
+# 4) filter in candidates with left and right present in pos_exons
+downreg_candidates <-  downreg_candidates |>
+  mutate(left_and_right =
+                 left_exons %in% pos_exons &
+                 right_exons %in% pos_exons
+  )
+downreg_exons  <- downreg_candidates |> filter(left_and_right == TRUE)
+
+# summary
+length(downreg_exons) # n of spliced exons 
+length(unique(downreg_exons$symbol)) # n of dif genes
+```
+
+List of genes that had skipped-exon events
+
+```{r}
+downreg_exons$symbol |> unique()
+```
+
+## Analyse upstream regions of the down-regulated exons
+
+We know that PTPB1 binds to intronic regions upstream to the skipped exons, regions 15-20 rich in U and C.\
+With the selected down-regulated exon candidates, we can analyze their upstream region and study their bp composition to look for PTPB1 signals.
+
+Get upstream sequences.
+
+```{r}
+#| message: false
+
+library(Biostrings)
+library(BSgenome.Hsapiens.UCSC.hg38)
+
+#get ranges of 100bp upstream region
+width_upstream <- 100
+upstr_downreg_exons <- downreg_exons |>  #GRanges
+        flank_upstream(width = width_upstream) 
+
+# get sequence from GRanges 
+seq_downreg_exons <-  Hsapiens |>  ## RNAStringSet object
+                       getSeq(upstr_downreg_exons) |>
+                       RNAStringSet() 
+
+seq_downreg_exons
+
+```
+
+Create ranges using sliding window of with 10 with 5 bp overlap
+
+```{r}
+window_width <- 10
+overlap <- 5
+step <-  window_width - overlap 
+n_windows <- ceiling((width_upstream - window_width) / step) + 1
+
+# create GRanges with the defined window ranges
+windows <- upstr_downreg_exons |> slide_ranges( width = window_width,  # GRanges
+                                         step = step) # divide into windows
+windows |> as_tibble()
+```
+
+Get the sequence for each window
+
+```{r}
+seq_windows <-  Hsapiens |>
+  getSeq(windows) |>
+  RNAStringSet()  # RNAStringSet
+# The RNAStringSet result has n_windows * (# of exons) rows.
+head(seq_windows)
+```
+
+Calculate the oligonucleotide frequency (A/C/G/U) per window
+
+```{r}
+bp_counts <- oligonucleotideFrequency(seq_windows, 
+                                      width = 1) #1-mer
+windows_bp <- bp_counts / rowSums(bp_counts)
+windows_bp |> as_tibble()
+
+```
+
+## Run SPLain app
+
+SPLain is a Shiny app that allows the exploration and visualization of DTU results. You can find the repository at https://github.com/beamimc/SPLain, and follow the installation instructions. Basically, we need to clone the repo and call the app providing the path of the cloned repo.
+
+```{r splain, eval=FALSE}
+splain_path <- "your_path/SPLain" # path to dir with the cloned SPLain repo
+app_dir <- file.path(splain_path, "app")
+
+# load the SPLain app 
+source(file.path(app_dir, "app.R"))
+
+# Run the Shiny app with your data and app directory
+shiny::runApp(
+  app(
+    se = se,
+    exons = exons,
+    app_dir = app_dir
+  )
+)
+```

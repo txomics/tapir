@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>4&nbsp; Post DTU Analysis – TAPIR: Transcript analysis pipelines in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./references.html" rel="next">
+<link href="./testing.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./post-dtu.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">TAPIR: Transcript analysis pipelines in R</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Book contents</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Exploratory data analysis</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./testing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Statistical testing</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./post-dtu.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#detect-skipped-exon-events" id="toc-detect-skipped-exon-events" class="nav-link active" data-scroll-target="#detect-skipped-exon-events"><span class="header-section-number">4.1</span> Detect skipped-exon events</a></li>
+  <li><a href="#analyse-upstream-regions-of-the-down-regulated-exons" id="toc-analyse-upstream-regions-of-the-down-regulated-exons" class="nav-link" data-scroll-target="#analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">4.2</span> Analyse upstream regions of the down-regulated exons</a></li>
+  <li><a href="#run-splain-app" id="toc-run-splain-app" class="nav-link" data-scroll-target="#run-splain-app"><span class="header-section-number">4.3</span> Run SPLain app</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>In this chapter, we show how to explore the results from the DTU analysis performed using satuRn (see Statistical testing chapter).</p>
+<p>Load needed objects computed in Statistical testing chapter</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SummarizedExperiment)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load SummarizeExperiment with DTU results</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"glinos_saturn_dtu.rds"</span>))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load exons </span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>exons <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"glinos_exons.rds"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Extract test results</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sig_res <span class="ot">&lt;-</span> <span class="fu">rowData</span>(se)[[<span class="st">"fitDTUResult_WT_vs_KD"</span>]] <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(<span class="fu">as.data.frame</span>(<span class="fu">rowData</span>(se)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>])) <span class="sc">|&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(empirical_FDR <span class="sc">&lt;</span> .<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(gene_id, isoform_id, symbol, estimates, empirical_pval, empirical_FDR) <span class="sc">|&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(empirical_pval)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>sig_res</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 77 × 6
+   gene_id            isoform_id   symbol estimates empirical_pval empirical_FDR
+   &lt;chr&gt;              &lt;chr&gt;        &lt;chr&gt;      &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;
+ 1 ENSG00000196923.13 ENST0000035… PDLIM7      3.60     0.00000937       0.00959
+ 2 ENSG00000196923.13 ENST0000035… PDLIM7     -3.60     0.0000111        0.00959
+ 3 ENSG00000134285.10 ENST0000055… FKBP11      1.98     0.0000126        0.00959
+ 4 ENSG00000134285.10 ENST0000055… FKBP11     -1.98     0.0000149        0.00959
+ 5 ENSG00000198467.13 ENST0000037… TPM2        2.63     0.0000433        0.0195 
+ 6 ENSG00000138326.18 ENST0000037… RPS24       1.60     0.0000456        0.0195 
+ 7 ENSG00000138326.18 ENST0000036… RPS24      -1.28     0.0000640        0.0196 
+ 8 ENSG00000112305.14 ENST0000031… SMAP1       4.18     0.0000695        0.0196 
+ 9 ENSG00000115310.17 ENST0000031… RTN4        2.70     0.0000809        0.0196 
+10 ENSG00000112305.14 ENST0000037… SMAP1      -4.18     0.0000811        0.0196 
+# ℹ 67 more rows</code></pre>
+</div>
+</div>
+<p>Obtain a GRanges of all the exons present in significant DTU. First, we obtain the GRangesList of all the significant transcripts. Then, we unlist the GRangesList into a GRanges with all the exons present in the significant transcripts.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyranges)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>sig_transcripts <span class="ot">&lt;-</span> exons[<span class="fu">names</span>(exons) <span class="sc">%in%</span> sig_res<span class="sc">$</span>isoform_id] <span class="co"># GRangesList </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Efficiently annotate if exon is internal or not (needed later for exon-level detection)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>sig_transcripts<span class="sc">@</span>unlistData<span class="sc">$</span>internal <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>sig_transcripts<span class="sc">@</span>unlistData<span class="sc">$</span>internal[<span class="fu">start</span>(sig_transcripts<span class="sc">@</span>partitioning)] <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sig_transcripts<span class="sc">@</span>unlistData<span class="sc">$</span>internal[<span class="fu">end</span>(sig_transcripts<span class="sc">@</span>partitioning)] <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> <span class="fu">unlist</span>(sig_transcripts) <span class="co">#GRanges</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GRanges object with 921 ranges and 4 metadata columns:
+                       seqnames              ranges strand |   exon_id
+                          &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+  ENST00000315554.12-1     chr1   22052707-22052742      + |      1503
+  ENST00000315554.12-1     chr1   22078429-22078583      + |      1505
+  ENST00000315554.12-1     chr1   22081722-22081794      + |      1507
+  ENST00000315554.12-1     chr1   22086439-22086548      + |      1508
+  ENST00000315554.12-1     chr1   22086669-22086866      + |      1509
+                   ...      ...                 ...    ... .       ...
+     ENST00000216879.8    chr20     1445666-1445830      - |    211007
+     ENST00000216879.8    chr20     1443511-1443911      - |    211006
+     ENST00000451301.5     chrX 103686631-103686705      - |    226429
+     ENST00000451301.5     chrX 103685171-103685260      - |    226428
+     ENST00000451301.5     chrX 103675496-103677051      - |    226423
+                         exon_name exon_rank  internal
+                       &lt;character&gt; &lt;integer&gt; &lt;logical&gt;
+  ENST00000315554.12-1        &lt;NA&gt;         1     FALSE
+  ENST00000315554.12-1        &lt;NA&gt;         2      TRUE
+  ENST00000315554.12-1        &lt;NA&gt;         3      TRUE
+  ENST00000315554.12-1        &lt;NA&gt;         4      TRUE
+  ENST00000315554.12-1        &lt;NA&gt;         5      TRUE
+                   ...         ...       ...       ...
+     ENST00000216879.8        &lt;NA&gt;         8      TRUE
+     ENST00000216879.8        &lt;NA&gt;         9     FALSE
+     ENST00000451301.5        &lt;NA&gt;         1     FALSE
+     ENST00000451301.5        &lt;NA&gt;         2      TRUE
+     ENST00000451301.5        &lt;NA&gt;         3     FALSE
+  -------
+  seqinfo: 25 sequences (1 circular) from an unspecified genome; no seqlengths</code></pre>
+</div>
+</div>
+<p>To perform exon-level detection events, we include a metadata column that will tell us if a given exon has a - or + coefficient (from satuRn analysis).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#include coef +/- column from the DTU analysis saturn </span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>coef <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>estimates[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>sign <span class="ot">&lt;-</span> <span class="fu">sign</span>(flat_sig_exons<span class="sc">$</span>coef)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include gene symbol for each transcript name </span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>symbol <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>symbol[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#include isoform ID for each transcript name </span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>isoform <span class="ot">&lt;-</span> <span class="fu">names</span>(flat_sig_exons)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GRanges object with 921 ranges and 8 metadata columns:
+                       seqnames              ranges strand |   exon_id
+                          &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+  ENST00000315554.12-1     chr1   22052707-22052742      + |      1503
+  ENST00000315554.12-1     chr1   22078429-22078583      + |      1505
+  ENST00000315554.12-1     chr1   22081722-22081794      + |      1507
+  ENST00000315554.12-1     chr1   22086439-22086548      + |      1508
+  ENST00000315554.12-1     chr1   22086669-22086866      + |      1509
+                   ...      ...                 ...    ... .       ...
+     ENST00000216879.8    chr20     1445666-1445830      - |    211007
+     ENST00000216879.8    chr20     1443511-1443911      - |    211006
+     ENST00000451301.5     chrX 103686631-103686705      - |    226429
+     ENST00000451301.5     chrX 103685171-103685260      - |    226428
+     ENST00000451301.5     chrX 103675496-103677051      - |    226423
+                         exon_name exon_rank  internal      coef      sign
+                       &lt;character&gt; &lt;integer&gt; &lt;logical&gt; &lt;numeric&gt; &lt;numeric&gt;
+  ENST00000315554.12-1        &lt;NA&gt;         1     FALSE  -1.84845        -1
+  ENST00000315554.12-1        &lt;NA&gt;         2      TRUE  -1.84845        -1
+  ENST00000315554.12-1        &lt;NA&gt;         3      TRUE  -1.84845        -1
+  ENST00000315554.12-1        &lt;NA&gt;         4      TRUE  -1.84845        -1
+  ENST00000315554.12-1        &lt;NA&gt;         5      TRUE  -1.84845        -1
+                   ...         ...       ...       ...       ...       ...
+     ENST00000216879.8        &lt;NA&gt;         8      TRUE   1.30549         1
+     ENST00000216879.8        &lt;NA&gt;         9     FALSE   1.30549         1
+     ENST00000451301.5        &lt;NA&gt;         1     FALSE  -2.08015        -1
+     ENST00000451301.5        &lt;NA&gt;         2      TRUE  -2.08015        -1
+     ENST00000451301.5        &lt;NA&gt;         3     FALSE  -2.08015        -1
+                            symbol              isoform
+                       &lt;character&gt;          &lt;character&gt;
+  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
+  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
+  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
+  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
+  ENST00000315554.12-1       CDC42 ENST00000315554.12-1
+                   ...         ...                  ...
+     ENST00000216879.8      NSFL1C    ENST00000216879.8
+     ENST00000216879.8      NSFL1C    ENST00000216879.8
+     ENST00000451301.5     MORF4L2    ENST00000451301.5
+     ENST00000451301.5     MORF4L2    ENST00000451301.5
+     ENST00000451301.5     MORF4L2    ENST00000451301.5
+  -------
+  seqinfo: 25 sequences (1 circular) from an unspecified genome; no seqlengths</code></pre>
+</div>
+</div>
+<section id="detect-skipped-exon-events" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="detect-skipped-exon-events"><span class="header-section-number">4.1</span> Detect skipped-exon events</h2>
+<p>We are looking to detect exons that were skipped-out due to PTBP1 (down-regulated exons). A transcript with a positive coefficient will be more likely to be expressed when the protein is abundant, and a transcript with a negative coefficient will be less likely to be expressed when the protein is abundant.</p>
+<p>Exons that appear in transcripts with negative coefficients and that do not appear in transcripts with positive coefficients may be <em>down-regulated</em> by the protein.</p>
+<p>We want to get exons that are present in the KD condition (sign -1) that are not present in the WD condition (sign -1)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">key =</span> <span class="fu">paste0</span>(isoform, <span class="st">"-"</span>, exon_rank))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) split + vs – coef sign</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>pos_exons  <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="dv">1</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>neg_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) filter non overlaps </span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>downreg_candidates <span class="ot">&lt;-</span> neg_exons <span class="sc">|&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_by_non_overlaps_directed</span>(pos_exons) <span class="sc">|&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SE =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(internal <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) detect left and right exons from candidates</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>left_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform, <span class="st">"-"</span>, </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                    downreg_candidates<span class="sc">$</span>exon_rank<span class="dv">-1</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>left_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> left_keys)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>right_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform, <span class="st">"-"</span>, </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                     downreg_candidates<span class="sc">$</span>exon_rank<span class="sc">+</span><span class="dv">1</span>)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>right_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> right_keys)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) filter in candidates with left and right present in pos_exons</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>downreg_candidates <span class="ot">&lt;-</span>  downreg_candidates <span class="sc">|&gt;</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">left_and_right =</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                 left_exons <span class="sc">%in%</span> pos_exons <span class="sc">&amp;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>                 right_exons <span class="sc">%in%</span> pos_exons</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>downreg_exons  <span class="ot">&lt;-</span> downreg_candidates <span class="sc">|&gt;</span> <span class="fu">filter</span>(left_and_right <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co"># summary</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(downreg_exons) <span class="co"># n of spliced exons </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 19</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(downreg_exons<span class="sc">$</span>symbol)) <span class="co"># n of dif genes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 16</code></pre>
+</div>
+</div>
+<p>List of genes that had skipped-exon events</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>downreg_exons<span class="sc">$</span>symbol <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "TPM3"   "SKP1"   "PDLIM7" "SMAP1"  "TPM2"   "RPS24"  "DPF2"   "EIF4G2"
+ [9] "ISCU"   "FERMT2" "PKM"    "RNPS1"  "EXOC7"  "TECR"   "AXL"    "NSFL1C"</code></pre>
+</div>
+</div>
+</section>
+<section id="analyse-upstream-regions-of-the-down-regulated-exons" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">4.2</span> Analyse upstream regions of the down-regulated exons</h2>
+<p>We know that PTPB1 binds to intronic regions upstream to the skipped exons, regions 15-20 rich in U and C.<br>
+With the selected down-regulated exon candidates, we can analyze their upstream region and study their bp composition to look for PTPB1 signals.</p>
+<p>Get upstream sequences.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Biostrings)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BSgenome.Hsapiens.UCSC.hg38)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#get ranges of 100bp upstream region</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>width_upstream <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>upstr_downreg_exons <span class="ot">&lt;-</span> downreg_exons <span class="sc">|&gt;</span>  <span class="co">#GRanges</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">flank_upstream</span>(<span class="at">width =</span> width_upstream) </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># get sequence from GRanges </span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>seq_downreg_exons <span class="ot">&lt;-</span>  Hsapiens <span class="sc">|&gt;</span>  <span class="do">## RNAStringSet object</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">getSeq</span>(upstr_downreg_exons) <span class="sc">|&gt;</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">RNAStringSet</span>() </span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>seq_downreg_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>RNAStringSet object of length 19:
+     width seq                                              names               
+ [1]   100 UCACACUUUCCUAAUUUCUAAUG...UGUGGUUCCUGUGCCUGUCCAG ENST00000328159.8
+ [2]   100 CUCUGAAAUGAAGCUUUUAAGUA...AUAUGGUCUUGCAUUGCCUCAG ENST00000522855.5
+ [3]   100 GCCUUGUCCCCGGCUGUUCUGAC...GUCUGUCUUAUUUCCUUCACAG ENST00000359895.6
+ [4]   100 AUCUCAAAAAUAUACAGGGAUUU...ACUUUUCACCUGUACUCCACAG ENST00000370455.7
+ [5]   100 CUUCUCUUCUCUCCUCCACCCGU...CCCCGCCACACACCCCCUGCAG ENST00000329305.6
+ ...   ... ...
+[15]   100 UUGACAUGCCGUUUCUAACCUGU...UGCACUGCCUUUCACUCCGUAG ENST00000607838.5
+[16]   100 CUGGGUGCGGGGCCUGGGGGGCA...CUCUGUGUGGCUCUGGUGACAG ENST00000589210.5
+[17]   100 CCUGGUCCAAGCACCUGAGUCUC...CUUACUGUUCCUCUGUCCCCAG ENST00000598987.5
+[18]   100 CCUCACUCCCUUACCCGUGCCAC...UCUCUGUCCUUUCUUCUCACAG ENST00000301178.8
+[19]   100 GCUCCUGGUGCUGUGUCACACCA...AACCUCACGGCUCUGACUUAAG ENST00000476071.5</code></pre>
+</div>
+</div>
+<p>Create ranges using sliding window of with 10 with 5 bp overlap</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>window_width <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>overlap <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>step <span class="ot">&lt;-</span>  window_width <span class="sc">-</span> overlap </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>n_windows <span class="ot">&lt;-</span> <span class="fu">ceiling</span>((width_upstream <span class="sc">-</span> window_width) <span class="sc">/</span> step) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create GRanges with the defined window ranges</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>windows <span class="ot">&lt;-</span> upstr_downreg_exons <span class="sc">|&gt;</span> <span class="fu">slide_ranges</span>( <span class="at">width =</span> window_width,  <span class="co"># GRanges</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">step =</span> step) <span class="co"># divide into windows</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>windows <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 361 × 6
+   seqnames     start       end width strand partition
+   &lt;fct&gt;        &lt;int&gt;     &lt;int&gt; &lt;int&gt; &lt;fct&gt;      &lt;int&gt;
+ 1 chr1     154169384 154169393    10 -              1
+ 2 chr1     154169389 154169398    10 -              1
+ 3 chr1     154169394 154169403    10 -              1
+ 4 chr1     154169399 154169408    10 -              1
+ 5 chr1     154169404 154169413    10 -              1
+ 6 chr1     154169409 154169418    10 -              1
+ 7 chr1     154169414 154169423    10 -              1
+ 8 chr1     154169419 154169428    10 -              1
+ 9 chr1     154169424 154169433    10 -              1
+10 chr1     154169429 154169438    10 -              1
+# ℹ 351 more rows</code></pre>
+</div>
+</div>
+<p>Get the sequence for each window</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>seq_windows <span class="ot">&lt;-</span>  Hsapiens <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getSeq</span>(windows) <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">RNAStringSet</span>()  <span class="co"># RNAStringSet</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The RNAStringSet result has n_windows * (# of exons) rows.</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(seq_windows)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>RNAStringSet object of length 6:
+    width seq                                               names               
+[1]    10 GCCUGUCCAG                                        ENST00000328159.8
+[2]    10 CCUGUGCCUG                                        ENST00000328159.8
+[3]    10 UGGUUCCUGU                                        ENST00000328159.8
+[4]    10 CCCUGUGGUU                                        ENST00000328159.8
+[5]    10 UUCCUCCCUG                                        ENST00000328159.8
+[6]    10 CCUCAUUCCU                                        ENST00000328159.8</code></pre>
+</div>
+</div>
+<p>Calculate the oligonucleotide frequency (A/C/G/U) per window</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bp_counts <span class="ot">&lt;-</span> <span class="fu">oligonucleotideFrequency</span>(seq_windows, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">width =</span> <span class="dv">1</span>) <span class="co">#1-mer</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="ot">&lt;-</span> bp_counts <span class="sc">/</span> <span class="fu">rowSums</span>(bp_counts)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 361 × 4
+       A     C     G     U
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1   0.1   0.4   0.3   0.2
+ 2   0     0.4   0.3   0.3
+ 3   0     0.2   0.3   0.5
+ 4   0     0.3   0.3   0.4
+ 5   0     0.5   0.1   0.4
+ 6   0.1   0.5   0     0.4
+ 7   0.1   0.5   0.1   0.3
+ 8   0.1   0.5   0.1   0.3
+ 9   0.1   0.5   0     0.4
+10   0.3   0.2   0.1   0.4
+# ℹ 351 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="run-splain-app" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="run-splain-app"><span class="header-section-number">4.3</span> Run SPLain app</h2>
+<p>SPLain is a Shiny app that allows the exploration and visualization of DTU results. You can find the repository at https://github.com/beamimc/SPLain, and follow the installation instructions. Basically, we need to clone the repo and call the app providing the path of the cloned repo.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>splain_path <span class="ot">&lt;-</span> <span class="st">"your_path/SPLain"</span> <span class="co"># path to dir with the cloned SPLain repo</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>app_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(splain_path, <span class="st">"app"</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load the SPLain app </span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">file.path</span>(app_dir, <span class="st">"app.R"</span>))</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the Shiny app with your data and app directory</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">app</span>(</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> se,</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">exons =</span> exons,</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">app_dir =</span> app_dir</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./testing.html" class="pagination-link" aria-label="Statistical testing">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Statistical testing</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./references.html" class="pagination-link" aria-label="References">
+        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
