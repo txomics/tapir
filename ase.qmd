@@ -1,0 +1,244 @@
+---
+title: "Allele Specific Expression - SNP based methods"
+editor: visual
+bibliography: references.bib
+---
+
+Human genes are typically found in two copies, or alleles, a phenomenon known as diploidy. One copy is inherited from each parent. While most genetic studies use a single "reference" genome (a haploid representation), the reality is more complex. **Allele-specific expression (ASE)** is the phenomenon where one of the two alleles of a gene is expressed at a higher level than the other, resulting in an imbalance in the amount of gene product. This imbalance can have significant functional consequences. [@Mattevi2025]
+
+Analysis of allele-specific expression (ASE) from long-read sequencing data remains an active research area, with several key methodological challenges still unresolved. This is primarily due to the higher error rates of current long-read technologies and less throughput, which can complicate accurate allele assignment. However, combining long-read RNA-Seq with short-read WGS data can create a powerful approach as shown below.
+
+### Input data required:
+
+1.  Long-read RNA-Seq QCed BAM files.
+2.  Short-read WGS data from biological replicates of samples used to perform LRS.
+3.  SNP + INDEL databases such as dbSNP.
+4.  Reference genome to be used for aligning both long-read RNA-Seq and short-reads WGS.
+
+### Variant Calling with short-read WGS:
+
+Variant calling works best with WGS data that has high coverage (\> 30x, i.e. 15x per haplotype in the human genome). It can be performed with RNA-Seq data as well, but this is not recommended for reasons such as:
+
+1.  ASE: Allele-specific expression can lead to false positives of homozygous alleles present for a given gene.
+2.  Uneven coverage: Since RNA-Seq is designed to capture only the regions that are expressed in the genome, we don't get variant information on genes that are not expressed.
+
+Say that you have ONT RNA-Seq data for which you want to perform allele specific gene/isoform expression analysis. Given above, we want to perform variant calling on an orthogonal high coverage WGS data from the same sample.
+
+### Step 1:
+
+Given have this WGS data, there are two formats in which it may be available. One would be multiple FASTQ files of technical replicates of the sample. The other could be biological replicates for a given condition.
+
+In case of technical replicates, it seems to be a good idea to merge the FASTQ files into a single file and align the merged file to the reference genome using software such as `Bowtie2`[@Langmead2012]. Merging can also be done after alignment.
+
+Example Code
+
+```{bash, alignment_with_bowite2, eval: false}
+
+samples=(sample_1 sample_2 sample_3) # List of samples to align
+INPUT_DIR="/path/to/fastq/files" # Directory containing the FASTQ files
+OUTPUT_DIR="/path/to/output/sam/files" # Directory to save the output SAM files
+ref_fa_index_dir="/path/to/reference/genome/index" # Directory containing the reference genome index files
+
+for sample in ${samples[@]}
+do
+    bowtie2 -x $ref_fa_index_dir -p ${SLURM_CPUS_PER_TASK} \
+    -1 $INPUT_DIR/${sample}_1.fastq -2 $INPUT_DIR/${sample}_2.fastq -S $OUTPUT_DIR/${sample}.sam \
+    --rg-id ${sample} --rg "SM:${sample}" --rg "PL:ILLUMINA" 
+    echo "**** done aligning $sample ****"
+done
+```
+
+### Step 2: Bam Quality Control
+
+Once alignment is done, we can use `samtools` [@Li2009] to sort the BAM file and index it. If samples are technical replicates, we can merge the BAM files using `samtools merge` command. This will create a single BAM file containing all the reads from all the samples.
+
+```{bash, merge_bams, eval: false}
+samples=(sample_1 sample_2 sample_3) # List of samples to merge
+INPUT_DIR="/path/to/sam/files" # Directory containing the SAM files
+OUTPUT_DIR="/path/to/output/bam/files" # Directory to save the output BAM files
+for sample in ${samples[@]}
+do
+    samtools sort -@ ${SLURM_CPUS_PER_TASK} -o $OUTPUT_DIR/${sample}.sorted.bam $INPUT_DIR/${sample}.sam
+    samtools index $OUTPUT_DIR/${sample}.sorted.bam
+    echo "**** done sorting and indexing $sample ****"
+done
+
+samtools merge -@ ${SLURM_CPUS_PER_TASK} $OUTPUT_DIR/merged.bam $OUTPUT_DIR/*.sorted.bam
+
+```
+
+The Genome Analysis Toolkit (GATK) best practices pipeline [@Van_der_Auwera2013]provides a set of commands to perform quality control on the BAM file. The first step is to mark duplicates using `MarkDuplicates`. This will help in removing PCR duplicates that can lead to false positives in variant calling (If we have a set of duplicate reads for a given region, we may incorrectly call it homozygous).
+
+```{bash, mark_bam_duplicates, eval: false}
+gatk MarkDuplicates \
+    -I $OUTPUT_DIR/merged.bam \
+    -O $OUTPUT_DIR/merged.marked.bam \
+    -M $OUTPUT_DIR/merged.marked.metrics.txt \
+    --CREATE_INDEX true \
+
+```
+
+The next step is to perform base quality score recalibration (BQSR) using `BaseRecalibrator`. This will help in correcting the base quality scores of the reads based on the known variants in the genome.
+
+The `BaseRecalibrator` is done by refering to known variants in the genome, which can be obtained from a VCF file. This VCF file can be obtained from a previous variant calling step or from a public database such as dbSNP or the Mills and 1000G Gold standard database for INDELs. They can be downloaded as so:
+
+```{bash, download_vcf_reference, eval: false}
+known_sites=path_to_where_you_want_to_download_the_reference_VCFs
+mkdir -p $known_sites
+cd $known_sites
+wget -N https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+wget -N https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
+
+wget -N https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Homo_sapiens_assembly38.dbsnp138.vcf
+wget -N https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Homo_sapiens_assembly38.dbsnp138.vcf.idx
+
+wget -N https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+wget -N https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi
+```
+
+Then the GATK `BaseRecalibrator` and `ApplyBQSR` commands can be run as follows:
+
+```{bash, VCF_calibrate_base, eval: false}
+gatk BaseRecalibrator \
+  -R "$ref_fa" \
+  -I "${OUTPUT_DIR}/merged.bam" \
+  --known-sites "$DBSNP" \
+  --known-sites "$MANDG_INDELS" \
+  --known-sites "$SNPs_1000G" \
+  -O "${OUTPUT_DIR}/recal_data.table" 
+
+gatk ApplyBQSR \
+  -R "$ref_fa" \
+  -I "${OUTPUT_DIR}/merged.bam" \
+  --bqsr-recal-file "${OUTPUT_DIR}/recal_data.table" \
+  -O "${OUTPUT_DIR}/recal.bam"
+```
+
+The final BAM QC step is to filter the BAM file using the `samtools view` command. This can be used to remove reads that are not properly paired, have low mapping quality, or are not primary alignments.
+
+```{bash, remove_low_quality_alignments, eval: false}
+samtools view -@ 8 -b -F 2308 -q 20 "${OUTPUT_DIR}/recal.bam" > "${OUTPUT_DIR}/filtered.bam"
+```
+
+### Step 3: Variant Calling
+
+Once the BAM file is ready, we can use GATK's `HaplotypeCaller` to perform variant calling. This command will call variants on the BAM file and output a VCF file containing the variants.
+
+```{bash, haplotype_calling, eval: false}
+gatk HaplotypeCaller \
+  -R "$ref_fa" \
+  -I "${OUTPUT_DIR}/filtered.bam" \
+  -O "${OUTPUT_DIR}/variants.g.vcf" \
+  -ERC GVCF
+```
+
+In the case where we have biological replicates, this command is used on each of the samples' BAM files. The VCF files can then be merged using `GATK CombineGVCFs` command to get a single VCF file containing all the variants from all the samples.
+
+The next step is to perform joint genotyping using the `GenotypeGVCFs` command. This will take the merged VCF file and output a final VCF file containing the genotypes for each sample. For the sake of phasing with `whatshap` [@Martin2023], this step may not be required as `whatshap` performs phasing based on only one of the samples even from a multi-sample VCF file.
+
+In order to QC these variants, we need them split into SNPs and INDELs. This is because SNPs and INDELs need to be treated differently during QC. This can be done using the `SelectVariants` command.
+
+```{bash, filter_snps_and_indels, eval: false}
+gatk SelectVariants \
+  -R "$ref_fa" \
+  -V "${OUTPUT_DIR}/variants.g.vcf" \
+  --select-type-to-include SNP \
+  -O "${OUTPUT_DIR}/SNPs.vcf.gz"
+  
+  #replace with --select-type-to-include INDEL for INDELs
+```
+
+The `VariantFiltration` command can then be used to filter the variants based on various criteria such as quality, depth, and allele frequency. The following filters are applied based on GATK Best Practices:
+
+The `SelectVariants` command can be used to select only the SNPs and INDELs that PASS the filters. So now we have two final files, `SNP_PASS.vcf` and `INDEL_PASS.vcf`, which can be used for downstream analysis.
+
+```{bash, VCF_QC, eval: false}
+
+gatk VariantFiltration \
+  -R "$ref_fa" \
+  -V "${OUTPUT_DIR}/SNPs.vcf.gz" \
+   -filter "QD < 2.0" --filter-name "QD2" \
+   -filter "QUAL < 30.0" --filter-name "QUAL30" \
+   -filter "SOR > 3.0" --filter-name "SOR3" \
+   -filter "FS > 60.0" --filter-name "FS60" \
+   -filter "MQ < 40.0" --filter-name "MQ40" \
+   #following if you have multiple samples
+   # -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+   # -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
+  -O "${OUTPUT_DIR}/SNPs_filtered.vcf.gz"
+  
+gatk VariantFiltration \
+  -R "$ref_fa" \
+  -V "${OUTPUT_DIR}/INDELs.vcf.gz" \
+   -filter "QD < 2.0" --filter-name "QD2" \
+   -filter "QUAL < 30.0" --filter-name "QUAL30" \
+   -filter "FS > 200.0" --filter-name "FS200" \
+   # doens't work for single samples
+   # -filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" \
+  -O "${OUTPUT_DIR}/INDELs_filtered.vcf.gz"
+```
+
+Then, to only keep the `PASS` variants:
+
+```{bash, VCF_QC_2, eval: false}
+gatk SelectVariants \
+  -R "$ref_fa" \
+  -V "${OUTPUT_DIR}/SNPs_filtered.vcf.gz" \
+  --exclude-filtered \
+  -O "${OUTPUT_DIR}/SNPs_filtered_PASS.vcf.gz"  
+  
+gatk SelectVariants \
+  -R "$ref_fa" \
+  -V "${OUTPUT_DIR}/INDELs_filtered.vcf.gz" \
+  --exclude-filtered \
+  -O "${OUTPUT_DIR}/INDELs_filtered_PASS.vcf.gz"
+```
+
+These files can be merged using the `MergeVcfs` command to get a single VCF file containing all the variants.
+
+```{bash, merge_vcf_for_biological_reps, eval: false}
+gatk MergeVcfs \
+  -I "${OUTPUT_DIR}/SNPs_filtered_PASS.vcf.gz" \
+  -I "${OUTPUT_DIR}/INDELs_filtered_PASS.vcf.gz" \
+  -O "${OUTPUT_DIR}/all_variants.vcf.gz"
+```
+
+### Step 4: Phasing
+
+Phasing is the process of determining which alleles are inherited together on the same chromosome. This is important for allele-specific expression analysis as it helps in determining which allele is expressed in a given gene.
+
+Phasing can be done using `whatshap`. The `whatshap phase` command can be used to produce a phased VCF file. This command can take multiple long read BAM files and the VCF file at the end of step 3 as input and outputs a phased VCF file containing the phased variants.
+
+```{bash, whatshap_phase, eval: false}
+
+conda activate whatshap 
+
+whatshap phase -o $phased_vcf_dir/phased.vcf --reference=$ref_fa --ignore-read-groups ${OUTPUT_DIR}/all_variants.vcf.gz \ 
+# vcf from previous step
+$genome_bam_dir/input_bam1_for_phasing.bam $genome_bam_dir/input_bam2_for_phasing.bam
+# above we're providing a list of bam files that help with phasing our input VCF 
+# the same bams will be haplotagged in the next step
+```
+
+`whatshap haplotag` is then used to tag the reads in the BAM file with the haplotype information . This command takes the phased VCF file and our long read BAM files as input and outputs a new BAM file with the haplotype information tagged as `HP1` or `HP2` if they are heterozygous. These tags can be used to `split` the BAM file into two separate BAM files, one for each haplotype.
+
+```{bash, whatshap_haplotag, eval: false}
+$input_bam_dir="/path/to/long_read_bam_files" # Directory containing the long read BAM files
+${lr_sample}=bam_1 # replace with your long read sample name
+whatshap haplotag -o $whatshap_output_dir/${lr_sample}.bam \
+--reference $ref_fa $phased_vcf $input_bam_dir/${lr_sample}.bam \
+--output-threads=19 --ignore-read-groups --output-haplotag-list $whatshap_output_dir/${lr_sample}_haplotypes.tsv
+
+echo "**** Splitting haplotagged BAM into haplotypes ****"
+whatshap split --output-h1 $whatshap_output_dir/${lr_sample}_h1.bam \
+--output-h2 $whatshap_output_dir/${lr_sample}_h2.bam $whatshap_output_dir/${lr_sample}.bam $whatshap_output_dir/${lr_sample}_haplotypes.tsv
+
+```
+
+### Step 5: Gene/Isoform Level Allele-specific expression analysis
+
+Once we have the haplotype specific BAM file(s), we can use `bambu`[@Chen2023] R package for gene/isoform quantification.
+
+### Step 6: Differential expression analysis
+
+Once we have the count matrix, we can use popular differential expression analysis tools such as `edgeR` version 4 [@Chen2025] to perform differential expression analysis. In our counts matrix each column refers to a specific haplotype for a specific sample/cell depending on whether we're working with bulk or single cell data.

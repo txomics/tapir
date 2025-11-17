@@ -12,6 +12,7 @@ book:
     - eda.qmd
     - testing.qmd
     - post-dtu.qmd
+    - ase.qmd
     - references.qmd
 
 bibliography: references.bib
