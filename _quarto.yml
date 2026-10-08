@@ -4,7 +4,7 @@ project:
 
 book:
   title: "TAPIR: Transcript analysis pipelines in R"
-  author: "The team"
+  author: "Michael Love, Justin Landis, Beatriz Campillo, Rachel Sharp"
   date: "5/29/2024"
   chapters:
     - index.qmd
