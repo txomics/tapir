@@ -2,17 +2,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>4&nbsp; Post DTU Analysis – TAPIR: Transcript analysis pipelines in R</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -73,10 +79,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -188,9 +194,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#detect-skipped-exon-events" id="toc-detect-skipped-exon-events" class="nav-link active" data-scroll-target="#detect-skipped-exon-events"><span class="header-section-number">4.1</span> Detect skipped-exon events</a></li>
-  <li><a href="#analyse-upstream-regions-of-the-down-regulated-exons" id="toc-analyse-upstream-regions-of-the-down-regulated-exons" class="nav-link" data-scroll-target="#analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">4.2</span> Analyse upstream regions of the down-regulated exons</a></li>
-  <li><a href="#run-splain-app" id="toc-run-splain-app" class="nav-link" data-scroll-target="#run-splain-app"><span class="header-section-number">4.3</span> Run SPLain app</a></li>
+  <li><a href="#post-dtu-analysis" id="toc-post-dtu-analysis" class="nav-link active" data-scroll-target="#post-dtu-analysis"><span class="header-section-number">5</span> Post DTU Analysis</a>
+  <ul class="collapse">
+  <li><a href="#detect-skipped-exon-events" id="toc-detect-skipped-exon-events" class="nav-link" data-scroll-target="#detect-skipped-exon-events"><span class="header-section-number">5.1</span> Detect skipped-exon events</a></li>
+  <li><a href="#analyse-upstream-regions-of-the-down-regulated-exons" id="toc-analyse-upstream-regions-of-the-down-regulated-exons" class="nav-link" data-scroll-target="#analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">5.2</span> Analyse upstream regions of the down-regulated exons</a></li>
+  <li><a href="#run-splain-app" id="toc-run-splain-app" class="nav-link" data-scroll-target="#run-splain-app"><span class="header-section-number">5.3</span> Run SPLain app</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -216,388 +225,181 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="post-dtu-analysis" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Post DTU Analysis</h1>
 <p>In this chapter, we show how to explore the results from the DTU analysis performed using satuRn (see Statistical testing chapter).</p>
 <p>Load needed objects computed in Statistical testing chapter</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SummarizedExperiment)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load SummarizeExperiment with DTU results</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"glinos_saturn_dtu.rds"</span>))</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load exons </span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>exons <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"glinos_exons.rds"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>exons <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"glinos_exons.rds"</span>)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Extract test results</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sig_res <span class="ot">&lt;-</span> <span class="fu">rowData</span>(se)[[<span class="st">"fitDTUResult_WT_vs_KD"</span>]] <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>sig_res <span class="ot">&lt;-</span> <span class="fu">rowData</span>(se)[[<span class="st">"fitDTUResult_WT_vs_KD"</span>]] <span class="sc">|&gt;</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_cols</span>(<span class="fu">as.data.frame</span>(<span class="fu">rowData</span>(se)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>])) <span class="sc">|&gt;</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(empirical_FDR <span class="sc">&lt;</span> .<span class="dv">1</span>) <span class="sc">|&gt;</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(gene_id, isoform_id, symbol, estimates, empirical_pval, empirical_FDR) <span class="sc">|&gt;</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(empirical_pval)</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>sig_res</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 77 × 6
-   gene_id            isoform_id   symbol estimates empirical_pval empirical_FDR
-   &lt;chr&gt;              &lt;chr&gt;        &lt;chr&gt;      &lt;dbl&gt;          &lt;dbl&gt;         &lt;dbl&gt;
- 1 ENSG00000196923.13 ENST0000035… PDLIM7      3.60     0.00000937       0.00959
- 2 ENSG00000196923.13 ENST0000035… PDLIM7     -3.60     0.0000111        0.00959
- 3 ENSG00000134285.10 ENST0000055… FKBP11      1.98     0.0000126        0.00959
- 4 ENSG00000134285.10 ENST0000055… FKBP11     -1.98     0.0000149        0.00959
- 5 ENSG00000198467.13 ENST0000037… TPM2        2.63     0.0000433        0.0195 
- 6 ENSG00000138326.18 ENST0000037… RPS24       1.60     0.0000456        0.0195 
- 7 ENSG00000138326.18 ENST0000036… RPS24      -1.28     0.0000640        0.0196 
- 8 ENSG00000112305.14 ENST0000031… SMAP1       4.18     0.0000695        0.0196 
- 9 ENSG00000115310.17 ENST0000031… RTN4        2.70     0.0000809        0.0196 
-10 ENSG00000112305.14 ENST0000037… SMAP1      -4.18     0.0000811        0.0196 
-# ℹ 67 more rows</code></pre>
-</div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>sig_res</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Obtain a GRanges of all the exons present in significant DTU. First, we flatten-out the GRangesList of all the transcripts and include a column to identify if an exon is internal (i.e.&nbsp;is not the first or last in the isoform) or not.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyranges)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>flat_exons <span class="ot">&lt;-</span> <span class="fu">unlist</span>(exons) <span class="co">#GRanges</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include 'isoform_id' column </span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>flat_exons<span class="sc">$</span>isoform_id <span class="ot">&lt;-</span> <span class="fu">names</span>(flat_exons)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#include 'internal' column</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(flat_exons<span class="sc">$</span>isoform_id)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>flat_exons <span class="ot">&lt;-</span> flat_exons <span class="sc">|&gt;</span> </span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">mutate</span>(</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                        <span class="at">nexons =</span> tab[isoform_id], </span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                        <span class="at">internal =</span> exon_rank <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">&amp;</span> exon_rank <span class="sc">&lt;</span> nexons</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                      )</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>flat_exons </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>GRanges object with 868829 ranges and 7 metadata columns:
-                                        seqnames        ranges strand |
-                                           &lt;Rle&gt;     &lt;IRanges&gt;  &lt;Rle&gt; |
-             ENSG00000237491.8-c0e70edb     chr1 785782-787672      + |
-                      ENST00000326734.2     chr1 817713-818202      + |
-                      ENST00000326734.2     chr1 818723-821358      + |
-             ENSG00000228794.8-5a74a94f     chr1 827608-827775      + |
-             ENSG00000228794.8-5a74a94f     chr1 829003-829104      + |
-                                    ...      ...           ...    ... .
-  chrM:12000_ENSG00000198786.2-ae9cf68f     chrM   12266-15326      + |
-  chrM:12000_ENSG00000198786.2-3aadce2b     chrM   12266-15707      + |
-                     chrM:1000-d5c15fee     chrM     1602-5511      - |
-                     chrM:3000-ed670af4     chrM     3305-5121      - |
-                     chrM:3000-53ee06de     chrM     3305-5511      - |
-                                          exon_id   exon_name exon_rank
-                                        &lt;integer&gt; &lt;character&gt; &lt;integer&gt;
-             ENSG00000237491.8-c0e70edb         1        &lt;NA&gt;         1
-                      ENST00000326734.2         2        &lt;NA&gt;         1
-                      ENST00000326734.2         3        &lt;NA&gt;         2
-             ENSG00000228794.8-5a74a94f         4        &lt;NA&gt;         1
-             ENSG00000228794.8-5a74a94f         9        &lt;NA&gt;         2
-                                    ...       ...         ...       ...
-  chrM:12000_ENSG00000198786.2-ae9cf68f    227899        &lt;NA&gt;         1
-  chrM:12000_ENSG00000198786.2-3aadce2b    227900        &lt;NA&gt;         1
-                     chrM:1000-d5c15fee    227901        &lt;NA&gt;         1
-                     chrM:3000-ed670af4    227902        &lt;NA&gt;         1
-                     chrM:3000-53ee06de    227903        &lt;NA&gt;         1
-                                                    isoform_id
-                                                   &lt;character&gt;
-             ENSG00000237491.8-c0e70edb ENSG00000237491.8-c0..
-                      ENST00000326734.2      ENST00000326734.2
-                      ENST00000326734.2      ENST00000326734.2
-             ENSG00000228794.8-5a74a94f ENSG00000228794.8-5a..
-             ENSG00000228794.8-5a74a94f ENSG00000228794.8-5a..
-                                    ...                    ...
-  chrM:12000_ENSG00000198786.2-ae9cf68f chrM:12000_ENSG00000..
-  chrM:12000_ENSG00000198786.2-3aadce2b chrM:12000_ENSG00000..
-                     chrM:1000-d5c15fee     chrM:1000-d5c15fee
-                     chrM:3000-ed670af4     chrM:3000-ed670af4
-                     chrM:3000-53ee06de     chrM:3000-53ee06de
-                                                                  nexons.Var1
-                                                                     &lt;factor&gt;
-             ENSG00000237491.8-c0e70edb            ENSG00000237491.8-c0e70edb
-                      ENST00000326734.2            ENST00000326734.2         
-                      ENST00000326734.2            ENST00000326734.2         
-             ENSG00000228794.8-5a74a94f            ENSG00000228794.8-5a74a94f
-             ENSG00000228794.8-5a74a94f            ENSG00000228794.8-5a74a94f
-                                    ...                                   ...
-  chrM:12000_ENSG00000198786.2-ae9cf68f chrM:12000_ENSG00000198786.2-ae9cf68f
-  chrM:12000_ENSG00000198786.2-3aadce2b chrM:12000_ENSG00000198786.2-3aadce2b
-                     chrM:1000-d5c15fee chrM:1000-d5c15fee                   
-                     chrM:3000-ed670af4 chrM:3000-ed670af4                   
-                     chrM:3000-53ee06de chrM:3000-53ee06de                   
-                                        nexons.Freq internal
-                                          &lt;integer&gt;  &lt;array&gt;
-             ENSG00000237491.8-c0e70edb           1    FALSE
-                      ENST00000326734.2           2    FALSE
-                      ENST00000326734.2           2    FALSE
-             ENSG00000228794.8-5a74a94f           4    FALSE
-             ENSG00000228794.8-5a74a94f           4     TRUE
-                                    ...         ...      ...
-  chrM:12000_ENSG00000198786.2-ae9cf68f           1    FALSE
-  chrM:12000_ENSG00000198786.2-3aadce2b           1    FALSE
-                     chrM:1000-d5c15fee           1    FALSE
-                     chrM:3000-ed670af4           1    FALSE
-                     chrM:3000-53ee06de           1    FALSE
-  -------
-  seqinfo: 25 sequences (1 circular) from an unspecified genome; no seqlengths</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyranges)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>flat_exons <span class="ot">&lt;-</span> <span class="fu">unlist</span>(exons) <span class="co">#GRanges</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include 'isoform_id' column </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>flat_exons<span class="sc">$</span>isoform_id <span class="ot">&lt;-</span> <span class="fu">names</span>(flat_exons)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#include 'internal' column</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(flat_exons<span class="sc">$</span>isoform_id)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>flat_exons <span class="ot">&lt;-</span> flat_exons <span class="sc">|&gt;</span> </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">mutate</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                        <span class="at">nexons =</span> tab[isoform_id], </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                        <span class="at">internal =</span> exon_rank <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">&amp;</span> exon_rank <span class="sc">&lt;</span> nexons</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                      )</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>flat_exons </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>To perform exon-level detection events, we include a metadata column that will tell us if a given exon has a - or + coefficient (from satuRn analysis).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter to keep only significant DTU transcripts </span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_exons <span class="sc">|&gt;</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">filter</span>( isoform_id <span class="sc">%in%</span> sig_res<span class="sc">$</span>isoform_id)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include coef +/- column from the DTU analysis saturn </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>coef <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>estimates[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>sign <span class="ot">&lt;-</span> <span class="fu">sign</span>(flat_sig_exons<span class="sc">$</span>coef)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#include gene symbol for each transcript name </span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>symbol <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>symbol[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>GRanges object with 921 ranges and 10 metadata columns:
-                       seqnames              ranges strand |   exon_id
-                          &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
-  ENST00000315554.12-1     chr1   22052707-22052742      + |      1503
-  ENST00000315554.12-1     chr1   22078429-22078583      + |      1505
-  ENST00000315554.12-1     chr1   22081722-22081794      + |      1507
-  ENST00000315554.12-1     chr1   22086439-22086548      + |      1508
-  ENST00000315554.12-1     chr1   22086669-22086866      + |      1509
-                   ...      ...                 ...    ... .       ...
-     ENST00000216879.8    chr20     1445666-1445830      - |    211007
-     ENST00000216879.8    chr20     1443511-1443911      - |    211006
-     ENST00000451301.5     chrX 103686631-103686705      - |    226429
-     ENST00000451301.5     chrX 103685171-103685260      - |    226428
-     ENST00000451301.5     chrX 103675496-103677051      - |    226423
-                         exon_name exon_rank           isoform_id
-                       &lt;character&gt; &lt;integer&gt;          &lt;character&gt;
-  ENST00000315554.12-1        &lt;NA&gt;         1 ENST00000315554.12-1
-  ENST00000315554.12-1        &lt;NA&gt;         2 ENST00000315554.12-1
-  ENST00000315554.12-1        &lt;NA&gt;         3 ENST00000315554.12-1
-  ENST00000315554.12-1        &lt;NA&gt;         4 ENST00000315554.12-1
-  ENST00000315554.12-1        &lt;NA&gt;         5 ENST00000315554.12-1
-                   ...         ...       ...                  ...
-     ENST00000216879.8        &lt;NA&gt;         8    ENST00000216879.8
-     ENST00000216879.8        &lt;NA&gt;         9    ENST00000216879.8
-     ENST00000451301.5        &lt;NA&gt;         1    ENST00000451301.5
-     ENST00000451301.5        &lt;NA&gt;         2    ENST00000451301.5
-     ENST00000451301.5        &lt;NA&gt;         3    ENST00000451301.5
-                                nexons.Var1 nexons.Freq internal      coef
-                                   &lt;factor&gt;   &lt;integer&gt;  &lt;array&gt; &lt;numeric&gt;
-  ENST00000315554.12-1 ENST00000315554.12-1           6    FALSE  -1.84845
-  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
-  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
-  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
-  ENST00000315554.12-1 ENST00000315554.12-1           6     TRUE  -1.84845
-                   ...                  ...         ...      ...       ...
-     ENST00000216879.8    ENST00000216879.8           9     TRUE   1.30549
-     ENST00000216879.8    ENST00000216879.8           9    FALSE   1.30549
-     ENST00000451301.5    ENST00000451301.5           3    FALSE  -2.08015
-     ENST00000451301.5    ENST00000451301.5           3     TRUE  -2.08015
-     ENST00000451301.5    ENST00000451301.5           3    FALSE  -2.08015
-                            sign      symbol
-                       &lt;numeric&gt; &lt;character&gt;
-  ENST00000315554.12-1        -1       CDC42
-  ENST00000315554.12-1        -1       CDC42
-  ENST00000315554.12-1        -1       CDC42
-  ENST00000315554.12-1        -1       CDC42
-  ENST00000315554.12-1        -1       CDC42
-                   ...       ...         ...
-     ENST00000216879.8         1      NSFL1C
-     ENST00000216879.8         1      NSFL1C
-     ENST00000451301.5        -1     MORF4L2
-     ENST00000451301.5        -1     MORF4L2
-     ENST00000451301.5        -1     MORF4L2
-  -------
-  seqinfo: 25 sequences (1 circular) from an unspecified genome; no seqlengths</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter to keep only significant DTU transcripts </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_exons <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">filter</span>( isoform_id <span class="sc">%in%</span> sig_res<span class="sc">$</span>isoform_id)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#include coef +/- column from the DTU analysis saturn </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>coef <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>estimates[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>sign <span class="ot">&lt;-</span> <span class="fu">sign</span>(flat_sig_exons<span class="sc">$</span>coef)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#include gene symbol for each transcript name </span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>flat_sig_exons<span class="sc">$</span>symbol <span class="ot">&lt;-</span> sig_res<span class="sc">$</span>symbol[<span class="fu">match</span>(<span class="fu">names</span>(flat_sig_exons), sig_res<span class="sc">$</span>isoform_id)]</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div>
-<section id="detect-skipped-exon-events" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="detect-skipped-exon-events"><span class="header-section-number">4.1</span> Detect skipped-exon events</h2>
+<section id="detect-skipped-exon-events" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="detect-skipped-exon-events"><span class="header-section-number">5.1</span> Detect skipped-exon events</h2>
 <p>We are looking to detect exons that were skipped-out due to PTBP1 (down-regulated exons). A transcript with a positive coefficient will be more likely to be expressed when the protein is abundant, and a transcript with a negative coefficient will be less likely to be expressed when the protein is abundant.</p>
 <p>Exons that appear in transcripts with negative coefficients and that do not appear in transcripts with positive coefficients may be <em>down-regulated</em> by the protein.</p>
 <p>We want to get exons that are present in the KD condition (sign -1) that are not present in the WD condition (sign -1)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">key =</span> <span class="fu">paste0</span>(isoform_id, <span class="st">"-"</span>, exon_rank))</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) split + vs – coef sign</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>pos_exons  <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="dv">1</span>)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>neg_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) filter non overlaps </span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>downreg_candidates <span class="ot">&lt;-</span> neg_exons <span class="sc">|&gt;</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_by_non_overlaps_directed</span>(pos_exons) <span class="sc">|&gt;</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SE =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(internal <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) detect left and right exons from candidates</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>left_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform_id, <span class="st">"-"</span>, </span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                    downreg_candidates<span class="sc">$</span>exon_rank<span class="dv">-1</span>)</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>left_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> left_keys)</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>right_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform_id, <span class="st">"-"</span>, </span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                     downreg_candidates<span class="sc">$</span>exon_rank<span class="sc">+</span><span class="dv">1</span>)</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>right_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> right_keys)</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) filter in candidates with left and right present in pos_exons</span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>downreg_candidates <span class="ot">&lt;-</span>  downreg_candidates <span class="sc">|&gt;</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">left_and_right =</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                 left_exons <span class="sc">%in%</span> pos_exons <span class="sc">&amp;</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>                 right_exons <span class="sc">%in%</span> pos_exons</span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>downreg_exons  <span class="ot">&lt;-</span> downreg_candidates <span class="sc">|&gt;</span> <span class="fu">filter</span>(left_and_right <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co"># summary</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(downreg_exons) <span class="co"># n of spliced exons </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 19</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(downreg_exons<span class="sc">$</span>symbol)) <span class="co"># n of dif genes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 16</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>flat_sig_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">key =</span> <span class="fu">paste0</span>(isoform_id, <span class="st">"-"</span>, exon_rank))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) split + vs – coef sign</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>pos_exons  <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="dv">1</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>neg_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span> <span class="fu">filter</span>(sign <span class="sc">==</span>  <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) filter non overlaps </span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>downreg_candidates <span class="ot">&lt;-</span> neg_exons <span class="sc">|&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_by_non_overlaps_directed</span>(pos_exons) <span class="sc">|&gt;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SE =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(internal <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) detect left and right exons from candidates</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>left_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform_id, <span class="st">"-"</span>, </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                    downreg_candidates<span class="sc">$</span>exon_rank<span class="dv">-1</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>left_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> left_keys)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>right_keys <span class="ot">&lt;-</span> <span class="fu">paste0</span>(downreg_candidates<span class="sc">$</span>isoform_id, <span class="st">"-"</span>, </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>                     downreg_candidates<span class="sc">$</span>exon_rank<span class="sc">+</span><span class="dv">1</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>right_exons <span class="ot">&lt;-</span> flat_sig_exons <span class="sc">|&gt;</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(key <span class="sc">%in%</span> right_keys)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) filter in candidates with left and right present in pos_exons</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>downreg_candidates <span class="ot">&lt;-</span>  downreg_candidates <span class="sc">|&gt;</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">left_and_right =</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>                 left_exons <span class="sc">%in%</span> pos_exons <span class="sc">&amp;</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>                 right_exons <span class="sc">%in%</span> pos_exons</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>downreg_exons  <span class="ot">&lt;-</span> downreg_candidates <span class="sc">|&gt;</span> <span class="fu">filter</span>(left_and_right <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co"># summary</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(downreg_exons) <span class="co"># n of spliced exons </span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">unique</span>(downreg_exons<span class="sc">$</span>symbol)) <span class="co"># n of dif genes</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>List of genes that had skipped-exon events</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>downreg_exons<span class="sc">$</span>symbol <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] "TPM3"   "SKP1"   "PDLIM7" "SMAP1"  "TPM2"   "RPS24"  "DPF2"   "EIF4G2"
- [9] "ISCU"   "FERMT2" "PKM"    "RNPS1"  "EXOC7"  "TECR"   "AXL"    "NSFL1C"</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>downreg_exons<span class="sc">$</span>symbol <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="analyse-upstream-regions-of-the-down-regulated-exons" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">4.2</span> Analyse upstream regions of the down-regulated exons</h2>
+<section id="analyse-upstream-regions-of-the-down-regulated-exons" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">5.2</span> Analyse upstream regions of the down-regulated exons</h2>
 <p>We know that PTPB1 binds to intronic regions upstream to the skipped exons, regions 15-20 rich in U and C.<br>
 With the selected down-regulated exon candidates, we can analyze their upstream region and study their bp composition to look for PTPB1 signals.</p>
 <p>Get upstream sequences.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Biostrings)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BSgenome.Hsapiens.UCSC.hg38)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#get ranges of 100bp upstream region</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>width_upstream <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>upstr_downreg_exons <span class="ot">&lt;-</span> downreg_exons <span class="sc">|&gt;</span>  <span class="co">#GRanges</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">flank_upstream</span>(<span class="at">width =</span> width_upstream) </span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># get sequence from GRanges </span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>seq_downreg_exons <span class="ot">&lt;-</span>  Hsapiens <span class="sc">|&gt;</span>  <span class="do">## RNAStringSet object</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">getSeq</span>(upstr_downreg_exons) <span class="sc">|&gt;</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">RNAStringSet</span>() </span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>seq_downreg_exons</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>RNAStringSet object of length 19:
-     width seq                                              names               
- [1]   100 UCACACUUUCCUAAUUUCUAAUG...UGUGGUUCCUGUGCCUGUCCAG ENST00000328159.8
- [2]   100 CUCUGAAAUGAAGCUUUUAAGUA...AUAUGGUCUUGCAUUGCCUCAG ENST00000522855.5
- [3]   100 GCCUUGUCCCCGGCUGUUCUGAC...GUCUGUCUUAUUUCCUUCACAG ENST00000359895.6
- [4]   100 AUCUCAAAAAUAUACAGGGAUUU...ACUUUUCACCUGUACUCCACAG ENST00000370455.7
- [5]   100 CUUCUCUUCUCUCCUCCACCCGU...CCCCGCCACACACCCCCUGCAG ENST00000329305.6
- ...   ... ...
-[15]   100 UUGACAUGCCGUUUCUAACCUGU...UGCACUGCCUUUCACUCCGUAG ENST00000607838.5
-[16]   100 CUGGGUGCGGGGCCUGGGGGGCA...CUCUGUGUGGCUCUGGUGACAG ENST00000589210.5
-[17]   100 CCUGGUCCAAGCACCUGAGUCUC...CUUACUGUUCCUCUGUCCCCAG ENST00000598987.5
-[18]   100 CCUCACUCCCUUACCCGUGCCAC...UCUCUGUCCUUUCUUCUCACAG ENST00000301178.8
-[19]   100 GCUCCUGGUGCUGUGUCACACCA...AACCUCACGGCUCUGACUUAAG ENST00000476071.5</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Biostrings)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(BSgenome.Hsapiens.UCSC.hg38)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#get ranges of 100bp upstream region</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>width_upstream <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>upstr_downreg_exons <span class="ot">&lt;-</span> downreg_exons <span class="sc">|&gt;</span>  <span class="co">#GRanges</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">flank_upstream</span>(<span class="at">width =</span> width_upstream) </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># get sequence from GRanges </span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>seq_downreg_exons <span class="ot">&lt;-</span>  Hsapiens <span class="sc">|&gt;</span>  <span class="do">## RNAStringSet object</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">getSeq</span>(upstr_downreg_exons) <span class="sc">|&gt;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">RNAStringSet</span>() </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>seq_downreg_exons</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Create ranges using sliding window of with 10 with 5 bp overlap</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>window_width <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>overlap <span class="ot">&lt;-</span> <span class="dv">5</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>step <span class="ot">&lt;-</span>  window_width <span class="sc">-</span> overlap </span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>n_windows <span class="ot">&lt;-</span> <span class="fu">ceiling</span>((width_upstream <span class="sc">-</span> window_width) <span class="sc">/</span> step) <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create GRanges with the defined window ranges</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>windows <span class="ot">&lt;-</span> upstr_downreg_exons <span class="sc">|&gt;</span> <span class="fu">slide_ranges</span>( <span class="at">width =</span> window_width,  <span class="co"># GRanges</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">step =</span> step) <span class="co"># divide into windows</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>windows <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 361 × 6
-   seqnames     start       end width strand partition
-   &lt;fct&gt;        &lt;int&gt;     &lt;int&gt; &lt;int&gt; &lt;fct&gt;      &lt;int&gt;
- 1 chr1     154169384 154169393    10 -              1
- 2 chr1     154169389 154169398    10 -              1
- 3 chr1     154169394 154169403    10 -              1
- 4 chr1     154169399 154169408    10 -              1
- 5 chr1     154169404 154169413    10 -              1
- 6 chr1     154169409 154169418    10 -              1
- 7 chr1     154169414 154169423    10 -              1
- 8 chr1     154169419 154169428    10 -              1
- 9 chr1     154169424 154169433    10 -              1
-10 chr1     154169429 154169438    10 -              1
-# ℹ 351 more rows</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>window_width <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>overlap <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>step <span class="ot">&lt;-</span>  window_width <span class="sc">-</span> overlap </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>n_windows <span class="ot">&lt;-</span> <span class="fu">ceiling</span>((width_upstream <span class="sc">-</span> window_width) <span class="sc">/</span> step) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create GRanges with the defined window ranges</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>windows <span class="ot">&lt;-</span> upstr_downreg_exons <span class="sc">|&gt;</span> <span class="fu">slide_ranges</span>( <span class="at">width =</span> window_width,  <span class="co"># GRanges</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">step =</span> step) <span class="co"># divide into windows</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>windows <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Get the sequence for each window</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>seq_windows <span class="ot">&lt;-</span>  Hsapiens <span class="sc">|&gt;</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getSeq</span>(windows) <span class="sc">|&gt;</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">RNAStringSet</span>()  <span class="co"># RNAStringSet</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The RNAStringSet result has n_windows * (# of exons) rows.</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(seq_windows)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>RNAStringSet object of length 6:
-    width seq                                               names               
-[1]    10 GCCUGUCCAG                                        ENST00000328159.8
-[2]    10 CCUGUGCCUG                                        ENST00000328159.8
-[3]    10 UGGUUCCUGU                                        ENST00000328159.8
-[4]    10 CCCUGUGGUU                                        ENST00000328159.8
-[5]    10 UUCCUCCCUG                                        ENST00000328159.8
-[6]    10 CCUCAUUCCU                                        ENST00000328159.8</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>seq_windows <span class="ot">&lt;-</span>  Hsapiens <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getSeq</span>(windows) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">RNAStringSet</span>()  <span class="co"># RNAStringSet</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The RNAStringSet result has n_windows * (# of exons) rows.</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(seq_windows)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Calculate the oligonucleotide frequency (A/C/G/U) per window</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bp_counts <span class="ot">&lt;-</span> <span class="fu">oligonucleotideFrequency</span>(seq_windows, </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">width =</span> <span class="dv">1</span>) <span class="co">#1-mer</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="ot">&lt;-</span> bp_counts <span class="sc">/</span> <span class="fu">rowSums</span>(bp_counts)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 361 × 4
-       A     C     G     U
-   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
- 1   0.1   0.4   0.3   0.2
- 2   0     0.4   0.3   0.3
- 3   0     0.2   0.3   0.5
- 4   0     0.3   0.3   0.4
- 5   0     0.5   0.1   0.4
- 6   0.1   0.5   0     0.4
- 7   0.1   0.5   0.1   0.3
- 8   0.1   0.5   0.1   0.3
- 9   0.1   0.5   0     0.4
-10   0.3   0.2   0.1   0.4
-# ℹ 351 more rows</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>bp_counts <span class="ot">&lt;-</span> <span class="fu">oligonucleotideFrequency</span>(seq_windows, </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">width =</span> <span class="dv">1</span>) <span class="co">#1-mer</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="ot">&lt;-</span> bp_counts <span class="sc">/</span> <span class="fu">rowSums</span>(bp_counts)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="run-splain-app" class="level2" data-number="4.3">
-<h2 data-number="4.3" class="anchored" data-anchor-id="run-splain-app"><span class="header-section-number">4.3</span> Run SPLain app</h2>
+<section id="run-splain-app" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="run-splain-app"><span class="header-section-number">5.3</span> Run SPLain app</h2>
 <p>SPLain is a Shiny app that allows the exploration and visualization of DTU results. You can find the repository at https://github.com/beamimc/SPLain, and follow the installation instructions. Basically, we need to clone the repo and call the app providing the path of the cloned repo.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>splain_path <span class="ot">&lt;-</span> <span class="st">"your_path/SPLain"</span> <span class="co"># path to dir with the cloned SPLain repo</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>app_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(splain_path, <span class="st">"app"</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load the SPLain app </span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">file.path</span>(app_dir, <span class="st">"app.R"</span>))</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the Shiny app with your data and app directory</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">app</span>(</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> se,</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">exons =</span> exons,</span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">app_dir =</span> app_dir</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>splain_path <span class="ot">&lt;-</span> <span class="st">"your_path/SPLain"</span> <span class="co"># path to dir with the cloned SPLain repo</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>app_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(splain_path, <span class="st">"app"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># load the SPLain app </span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">file.path</span>(app_dir, <span class="st">"app.R"</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the Shiny app with your data and app directory</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">app</span>(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">se =</span> se,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">exons =</span> exons,</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">app_dir =</span> app_dir</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -652,13 +454,14 @@ With the selected down-regulated exon candidates, we can analyze their upstream 
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
