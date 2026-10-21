@@ -1,7 +1,7 @@
 library(SummarizedExperiment)
 library(plyxp)
 library(plyranges)
-devtools::load_all("~/proj/bea-campillo/splicelogic")
+devtools::load_all("../splicelogic")
 
 # simulate a small dataset: 2 genes x 2 isoforms, 3 control + 3 treated samples
 set.seed(5)
