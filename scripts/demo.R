@@ -34,6 +34,7 @@ se <- SummarizedExperiment(
 xp <- se |>
   new_plyxp()
 
+# compute isoform proportion per sample
 xp <- xp |>
   group_by(rows(gene_id)) |>
   mutate(
@@ -53,8 +54,12 @@ iso_prop_stats <- xp |>
     cols(.samples = unique(condition))
   )
 
+# examine the statistics
 assay(iso_prop_stats, "prop_mean") |> round(2)
 assay(iso_prop_stats, "prop_sd") |> round(3)
+
+# now we could use those statistics while running splicelogic
+# as an example, first we create some demo transcripts with exons
 
 # exon ranges for the transcripts, with DTU results
 # gene A starts at 101, gene B at 1001; the 202 isoforms (positive
@@ -108,6 +113,7 @@ skipped <- exons |>
   ) |>
   find_skipped_exons()
 
+# make a small table
 skipped |>
   select(
     pval = pvalue,
