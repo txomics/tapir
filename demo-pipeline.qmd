@@ -1,0 +1,156 @@
+---
+title: "Splicing Event Detection using plyxp + splicelogic"
+execute:
+  eval: true
+  message: false
+  warning: false
+---
+
+Following differential transcript usage (DTU) analysis (e.g., using `satuRn`), we may next want to examine the specific splicing events (skipped exons, alternative splice site usage, or entron retention, e.g.) underlying observed transcript-level differences.
+
+In this chapter, we demonstrate how to use `plyxp` and `splicelogic` together to compute and visualize condition-specific isoform proportions and detect skipped-exon events, using simulated transcripts.
+
+## Setup and Dependencies
+
+```{r setup}
+#| message: false
+library(SummarizedExperiment)
+library(plyxp)
+library(plyranges)
+library(splicelogic)
+library(here)
+
+# Simulation helper functions
+source(here("scripts", "demo_sims.R"))
+```
+
+## Simulating Transcript Abundances
+
+To illustrate the workflow, we simulate a minimal `SummarizedExperiment` containing 2 genes with 2 isoforms each across 6 samples (3 control vs. 3 treated).
+
+- **Gene A:** Undergoes isoform switching upon treatment (switching from isoform 201 to isoform 202).
+- **Gene B:** Isoform ratios remain unchanged across conditions.
+
+```{r simulate-data}
+set.seed(5)
+se <- simulate_se(n_per_group = 3)
+se
+```
+
+## Computing Isoform Proportions with `plyxp`
+
+We will start by using `plyxp` to wrap our `SummarizedExperiment`. This allows us to further manipulate the rows (features) and columns (samples) of our dataset using fast and intuitive tidy grammar. Here, we group by `gene_id` across rows to compute the relative isoform proportion per sample:
+
+$$\text{Isoform Proportion} = \frac{\text{Counts}_{\text{isoform}}}{\sum \text{Counts}_{\text{gene}}}$$
+
+```{r compute-proportions}
+xp <- se |>
+new_plyxp()
+
+# Compute isoform proportions per sample within each gene
+xp <- xp |>
+group_by(rows(gene_id)) |>
+mutate(
+  iso_prop = t(t(counts) / colSums(counts))
+) |>
+ungroup()
+
+# Inspect computed proportions
+assay(xp, "iso_prop") |> round(2)
+```
+
+Let's check our work by comparing these empirical proportions against the true simulation means ($\mu$):
+  
+```{r check-true-means}
+# Ground truth means for Gene A isoforms (201 and 202)
+assay(xp, "mu")[1:2, ]
+```
+
+## Summarizing Statistics per Condition
+
+Next, we summarize the mean and standard deviation of isoform proportions within each condition (`control` and `treated`):
+  
+```{r condition-stats}
+iso_stats <- xp |>
+  group_by(cols(condition)) |>
+  summarize(
+    mean = rowMeans(iso_prop),
+    sd = rowSds(iso_prop),
+    cols(.samples = unique(condition))
+  )
+
+# Inspect mean and SD matrices
+assay(iso_stats, "mean") |> round(2)
+assay(iso_stats, "sd") |> round(3)
+```
+
+## Annotating Transcript Exons
+
+To map statistical changes to genomic coordinates, we generate a `GRanges` representation of our simulated transcripts. 
+
+In this structure:
+  * **Isoform 201:** Includes the middle cassette exon.
+* **Isoform 202:** Skips the middle cassette exon (associated with a positive DTU coefficient).
+
+```{r simulate-exons}
+exons <- simulate_exons()
+exons
+```
+
+We now append the per-condition summary statistics (`mean` and `sd`) to each transcript's exon annotations, matching by `tx_id` (transcript ID):
+
+```{r annotate-exons}
+exons <- exons |>
+  mutate(
+    mean_ctl = assay(iso_stats, "mean")[tx_id, "control"],
+    mean_trt = assay(iso_stats, "mean")[tx_id, "treated"],
+    sd_ctl   = assay(iso_stats, "sd")[tx_id, "control"],
+    sd_trt   = assay(iso_stats, "sd")[tx_id, "treated"]
+  )
+```
+
+## Identifying Skipped Exons with `splicelogic`
+
+Now that we have a summary of exonic effects per condition, we can characterize the types of splicing events underlying the observed changes using splicelogic
+
+Here, we will use splicelogic to identify skipped exons. A skipped exon (SE) event is defined when an exon present in a transcript with a negative DTU coefficient is spliced out (skipped) in a positive-coefficient transcript of the same gene. (this is confusing - visual?)
+
+### Preprocessing Exon Metadata
+The `preprocess()` function from `splicelogic` designates the coefficient column and retains relevant metadata for downstream reporting:
+
+```{r preprocess-exons}
+exons <- exons |>
+  preprocess(
+    coef_col = "coefficient",
+    additional_columns = c(
+      "pvalue",
+      "mean_ctl", "mean_trt",
+      "sd_ctl", "sd_trt"
+    )
+  )
+```
+
+### Finding Skipped Exons
+In practical analyses, you would typically filter for statistically significant transcripts (e.g., FDR $< 0.1$) before running event detection. Here, we analyze all transcripts to evaluate both Gene A and Gene B:
+
+```{r find-skipped}
+skipped <- exons |>
+  find_skipped_exons()
+
+# Select key summary columns
+skipped |>
+  select(
+    gene_id,
+    pvalue,
+    up_pvalue = event_pvalue,
+    ctl = mean_ctl, 
+    trt = mean_trt,
+    up_ctl = event_mean_ctl,
+    up_trt = event_mean_trt
+  )
+```
+
+### Interpretation of Results
+
+* **Gene A:** Two transcripts show significant DTU. The transcript containing the cassette exon is down-regulated upon treatment (mean proportion drops from $0.80 \rightarrow 0.20$), while the isoform excluding this exon is up-regulated ($0.20 \rightarrow 0.80$). `find_skipped_exons()` successfully pinpoints this coordinates-level cassette exon event.
+* **Gene B:** No significant isoform shift occurs between conditions.

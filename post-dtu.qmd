@@ -4,8 +4,6 @@ execute:
   eval: false
 ---
 
-# Post DTU Analysis
-
 In this chapter, we show how to explore the results from the DTU analysis performed using satuRn (see Statistical testing chapter).
 
 Load needed objects computed in Statistical testing chapter

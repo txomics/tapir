@@ -71,7 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./references.html" rel="next">
+<link href="./demo-pipeline.html" rel="next">
 <link href="./testing.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -181,6 +181,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./demo-pipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Splicing Event Detection using plyxp + splicelogic</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
@@ -195,12 +201,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#post-dtu-analysis" id="toc-post-dtu-analysis" class="nav-link active" data-scroll-target="#post-dtu-analysis"><span class="header-section-number">5</span> Post DTU Analysis</a>
-  <ul class="collapse">
-  <li><a href="#detect-skipped-exon-events" id="toc-detect-skipped-exon-events" class="nav-link" data-scroll-target="#detect-skipped-exon-events"><span class="header-section-number">5.1</span> Detect skipped-exon events</a></li>
-  <li><a href="#analyse-upstream-regions-of-the-down-regulated-exons" id="toc-analyse-upstream-regions-of-the-down-regulated-exons" class="nav-link" data-scroll-target="#analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">5.2</span> Analyse upstream regions of the down-regulated exons</a></li>
-  <li><a href="#run-splain-app" id="toc-run-splain-app" class="nav-link" data-scroll-target="#run-splain-app"><span class="header-section-number">5.3</span> Run SPLain app</a></li>
-  </ul></li>
+  <li><a href="#detect-skipped-exon-events" id="toc-detect-skipped-exon-events" class="nav-link active" data-scroll-target="#detect-skipped-exon-events"><span class="header-section-number">4.1</span> Detect skipped-exon events</a></li>
+  <li><a href="#analyse-upstream-regions-of-the-down-regulated-exons" id="toc-analyse-upstream-regions-of-the-down-regulated-exons" class="nav-link" data-scroll-target="#analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">4.2</span> Analyse upstream regions of the down-regulated exons</a></li>
+  <li><a href="#run-splain-app" id="toc-run-splain-app" class="nav-link" data-scroll-target="#run-splain-app"><span class="header-section-number">4.3</span> Run SPLain app</a></li>
   </ul>
 </nav>
     </div>
@@ -226,8 +229,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="post-dtu-analysis" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Post DTU Analysis</h1>
 <p>In this chapter, we show how to explore the results from the DTU analysis performed using satuRn (see Statistical testing chapter).</p>
 <p>Load needed objects computed in Statistical testing chapter</p>
 <div class="cell">
@@ -282,8 +283,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>flat_sig_exons</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<section id="detect-skipped-exon-events" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="detect-skipped-exon-events"><span class="header-section-number">5.1</span> Detect skipped-exon events</h2>
+<section id="detect-skipped-exon-events" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="detect-skipped-exon-events"><span class="header-section-number">4.1</span> Detect skipped-exon events</h2>
 <p>We are looking to detect exons that were skipped-out due to PTBP1 (down-regulated exons). A transcript with a positive coefficient will be more likely to be expressed when the protein is abundant, and a transcript with a negative coefficient will be less likely to be expressed when the protein is abundant.</p>
 <p>Exons that appear in transcripts with negative coefficients and that do not appear in transcripts with positive coefficients may be <em>down-regulated</em> by the protein.</p>
 <p>We want to get exons that are present in the KD condition (sign -1) that are not present in the WD condition (sign -1)</p>
@@ -330,8 +331,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>downreg_exons<span class="sc">$</span>symbol <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="analyse-upstream-regions-of-the-down-regulated-exons" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">5.2</span> Analyse upstream regions of the down-regulated exons</h2>
+<section id="analyse-upstream-regions-of-the-down-regulated-exons" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="analyse-upstream-regions-of-the-down-regulated-exons"><span class="header-section-number">4.2</span> Analyse upstream regions of the down-regulated exons</h2>
 <p>We know that PTPB1 binds to intronic regions upstream to the skipped exons, regions 15-20 rich in U and C.<br>
 With the selected down-regulated exon candidates, we can analyze their upstream region and study their bp composition to look for PTPB1 signals.</p>
 <p>Get upstream sequences.</p>
@@ -379,8 +380,8 @@ With the selected down-regulated exon candidates, we can analyze their upstream 
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>windows_bp <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="run-splain-app" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="run-splain-app"><span class="header-section-number">5.3</span> Run SPLain app</h2>
+<section id="run-splain-app" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="run-splain-app"><span class="header-section-number">4.3</span> Run SPLain app</h2>
 <p>SPLain is a Shiny app that allows the exploration and visualization of DTU results. You can find the repository at https://github.com/beamimc/SPLain, and follow the installation instructions. Basically, we need to clone the repo and call the app providing the path of the cloned repo.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>splain_path <span class="ot">&lt;-</span> <span class="st">"your_path/SPLain"</span> <span class="co"># path to dir with the cloned SPLain repo</span></span>
@@ -400,7 +401,6 @@ With the selected down-regulated exon candidates, we can analyze their upstream 
 </div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -887,8 +887,8 @@ With the selected down-regulated exon candidates, we can analyze their upstream 
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./references.html" class="pagination-link" aria-label="References">
-        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./demo-pipeline.html" class="pagination-link" aria-label="Splicing Event Detection using plyxp + splicelogic">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Splicing Event Detection using plyxp + splicelogic</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

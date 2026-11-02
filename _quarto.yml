@@ -17,6 +17,7 @@ book:
     - eda.qmd
     - testing.qmd
     - post-dtu.qmd
+    - demo-pipeline.qmd
     - references.qmd
 
 bibliography: references.bib
