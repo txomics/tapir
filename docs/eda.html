@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.10.18">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -12,13 +12,10 @@
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
+code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: 1.5em;}
-div.column{flex: auto;}
-@media screen {
-div.columns{gap: min(4vw, 1.5em);}
-div.column{overflow-x: auto;}
-}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -79,10 +76,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -219,7 +216,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>here() starts at /Users/cfadmin_1/Documents/GradSchool/TAPIR/tapir</code></pre>
+<pre><code>here() starts at /Users/love/bioc/tapir/tapir</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://github.com/gandallab/Dev_Brain_IsoSeq/raw/main/data/cp_vz_0.75_min_7_recovery_talon_abundance_filtered.tsv.gz"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>filename <span class="ot">&lt;-</span> <span class="fu">basename</span>(url)</span>
@@ -233,10 +230,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 214516 Columns: 35
-── Column specification ────────────────────────────────────────────────────────
+── Column specification ────────────────────────────────────────────────────────────────────────────
 Delimiter: "\t"
-chr  (7): annot_gene_id, annot_transcript_id, annot_gene_name, annot_transcr...
-dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3...
+chr  (7): annot_gene_id, annot_transcript_id, annot_gene_name, annot_transcript_name, gene_novel...
+dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3_VZ, 209_4_VZ, 334_1...
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
@@ -247,33 +244,28 @@ dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3...
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(raw_abundance_table)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"        
- [4] "annot_transcript_id"   "annot_gene_name"       "annot_transcript_name"
- [7] "n_exons"               "length"                "gene_novelty"         
-[10] "transcript_novelty"    "ISM_subtype"           "209_1_VZ"             
-[13] "209_2_VZ"              "209_3_VZ"              "209_4_VZ"             
-[16] "334_1_VZ"              "334_2_VZ"              "334_3_VZ"             
-[19] "334_4_VZ"              "336_1_VZ"              "336_2_VZ"             
-[22] "336_3_VZ"              "336_4_VZ"              "334_1_CP"             
-[25] "334_2_CP"              "334_3_CP"              "334_4_CP"             
-[28] "209_1_CP"              "209_2_CP"              "209_3_CP"             
-[31] "209_4_CP"              "336_1_CP"              "336_2_CP"             
-[34] "336_3_CP"              "336_4_CP"             </code></pre>
+<pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"         "annot_transcript_id"  
+ [5] "annot_gene_name"       "annot_transcript_name" "n_exons"               "length"               
+ [9] "gene_novelty"          "transcript_novelty"    "ISM_subtype"           "209_1_VZ"             
+[13] "209_2_VZ"              "209_3_VZ"              "209_4_VZ"              "334_1_VZ"             
+[17] "334_2_VZ"              "334_3_VZ"              "334_4_VZ"              "336_1_VZ"             
+[21] "336_2_VZ"              "336_3_VZ"              "336_4_VZ"              "334_1_CP"             
+[25] "334_2_CP"              "334_3_CP"              "334_4_CP"              "209_1_CP"             
+[29] "209_2_CP"              "209_3_CP"              "209_4_CP"              "336_1_CP"             
+[33] "336_2_CP"              "336_3_CP"              "336_4_CP"             </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>raw_abundance_table[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,<span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 15
-  gene_ID transcript_ID annot_gene_id       annot_transcript_id annot_gene_name
-    &lt;dbl&gt;         &lt;dbl&gt; &lt;chr&gt;               &lt;chr&gt;               &lt;chr&gt;          
-1      12            21 ENSG00000268903.1_5 ENST00000494149.2_2 AL627309.6     
-2      18            34 ENSG00000228463.4   ENST00000424587.2   AP006222.2     
-3      22            39 ENSG00000224813.2   ENST00000445840.1   RP4-669L17.4   
-4      32            65 ENSG00000225630.1_4 ENST00000457540.1_1 MTND2P28       
-5      33            66 ENSG00000237973.1_4 ENST00000414273.1_1 MTCO1P12       
-# ℹ 10 more variables: annot_transcript_name &lt;chr&gt;, n_exons &lt;dbl&gt;,
-#   length &lt;dbl&gt;, gene_novelty &lt;chr&gt;, transcript_novelty &lt;chr&gt;,
-#   ISM_subtype &lt;chr&gt;, `209_1_VZ` &lt;dbl&gt;, `209_2_VZ` &lt;dbl&gt;, `209_3_VZ` &lt;dbl&gt;,
-#   `209_4_VZ` &lt;dbl&gt;</code></pre>
+  gene_ID transcript_ID annot_gene_id      annot_transcript_id annot_gene_name annot_transcript_name
+    &lt;dbl&gt;         &lt;dbl&gt; &lt;chr&gt;              &lt;chr&gt;               &lt;chr&gt;           &lt;chr&gt;                
+1      12            21 ENSG00000268903.1… ENST00000494149.2_2 AL627309.6      AL627309.6-201       
+2      18            34 ENSG00000228463.4  ENST00000424587.2   AP006222.2      AP006222.2-001       
+3      22            39 ENSG00000224813.2  ENST00000445840.1   RP4-669L17.4    RP4-669L17.4-001     
+4      32            65 ENSG00000225630.1… ENST00000457540.1_1 MTND2P28        MTND2P28-201         
+5      33            66 ENSG00000237973.1… ENST00000414273.1_1 MTCO1P12        MTCO1P12-201         
+# ℹ 9 more variables: n_exons &lt;dbl&gt;, length &lt;dbl&gt;, gene_novelty &lt;chr&gt;, transcript_novelty &lt;chr&gt;,
+#   ISM_subtype &lt;chr&gt;, `209_1_VZ` &lt;dbl&gt;, `209_2_VZ` &lt;dbl&gt;, `209_3_VZ` &lt;dbl&gt;, `209_4_VZ` &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -298,14 +290,13 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="fu">across</span>(<span class="fu">everything</span>(), sum))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 24
-  `209_1_VZ` `209_2_VZ` `209_3_VZ` `209_4_VZ` `334_1_VZ` `334_2_VZ` `334_3_VZ`
-       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-1     623608     542318     501999     529527    1273843    1594927    1160553
-# ℹ 17 more variables: `334_4_VZ` &lt;dbl&gt;, `336_1_VZ` &lt;dbl&gt;, `336_2_VZ` &lt;dbl&gt;,
-#   `336_3_VZ` &lt;dbl&gt;, `336_4_VZ` &lt;dbl&gt;, `334_1_CP` &lt;dbl&gt;, `334_2_CP` &lt;dbl&gt;,
-#   `334_3_CP` &lt;dbl&gt;, `334_4_CP` &lt;dbl&gt;, `209_1_CP` &lt;dbl&gt;, `209_2_CP` &lt;dbl&gt;,
-#   `209_3_CP` &lt;dbl&gt;, `209_4_CP` &lt;dbl&gt;, `336_1_CP` &lt;dbl&gt;, `336_2_CP` &lt;dbl&gt;,
-#   `336_3_CP` &lt;dbl&gt;, `336_4_CP` &lt;dbl&gt;</code></pre>
+  `209_1_VZ` `209_2_VZ` `209_3_VZ` `209_4_VZ` `334_1_VZ` `334_2_VZ` `334_3_VZ` `334_4_VZ` `336_1_VZ`
+       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+1     623608     542318     501999     529527    1273843    1594927    1160553    1546123    1328077
+# ℹ 15 more variables: `336_2_VZ` &lt;dbl&gt;, `336_3_VZ` &lt;dbl&gt;, `336_4_VZ` &lt;dbl&gt;, `334_1_CP` &lt;dbl&gt;,
+#   `334_2_CP` &lt;dbl&gt;, `334_3_CP` &lt;dbl&gt;, `334_4_CP` &lt;dbl&gt;, `209_1_CP` &lt;dbl&gt;, `209_2_CP` &lt;dbl&gt;,
+#   `209_3_CP` &lt;dbl&gt;, `209_4_CP` &lt;dbl&gt;, `336_1_CP` &lt;dbl&gt;, `336_2_CP` &lt;dbl&gt;, `336_3_CP` &lt;dbl&gt;,
+#   `336_4_CP` &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -316,10 +307,10 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>raw_abundance_table <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 214516 Columns: 35
-── Column specification ────────────────────────────────────────────────────────
+── Column specification ────────────────────────────────────────────────────────────────────────────
 Delimiter: "\t"
-chr  (7): annot_gene_id, annot_transcript_id, annot_gene_name, annot_transcr...
-dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3...
+chr  (7): annot_gene_id, annot_transcript_id, annot_gene_name, annot_transcript_name, gene_novel...
+dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3_VZ, 209_4_VZ, 334_1...
 
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
@@ -330,18 +321,15 @@ dbl (28): gene_ID, transcript_ID, n_exons, length, 209_1_VZ, 209_2_VZ, 209_3...
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(raw_abundance_table)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"        
- [4] "annot_transcript_id"   "annot_gene_name"       "annot_transcript_name"
- [7] "n_exons"               "length"                "gene_novelty"         
-[10] "transcript_novelty"    "ISM_subtype"           "209_1_VZ"             
-[13] "209_2_VZ"              "209_3_VZ"              "209_4_VZ"             
-[16] "334_1_VZ"              "334_2_VZ"              "334_3_VZ"             
-[19] "334_4_VZ"              "336_1_VZ"              "336_2_VZ"             
-[22] "336_3_VZ"              "336_4_VZ"              "334_1_CP"             
-[25] "334_2_CP"              "334_3_CP"              "334_4_CP"             
-[28] "209_1_CP"              "209_2_CP"              "209_3_CP"             
-[31] "209_4_CP"              "336_1_CP"              "336_2_CP"             
-[34] "336_3_CP"              "336_4_CP"             </code></pre>
+<pre><code> [1] "gene_ID"               "transcript_ID"         "annot_gene_id"         "annot_transcript_id"  
+ [5] "annot_gene_name"       "annot_transcript_name" "n_exons"               "length"               
+ [9] "gene_novelty"          "transcript_novelty"    "ISM_subtype"           "209_1_VZ"             
+[13] "209_2_VZ"              "209_3_VZ"              "209_4_VZ"              "334_1_VZ"             
+[17] "334_2_VZ"              "334_3_VZ"              "334_4_VZ"              "336_1_VZ"             
+[21] "336_2_VZ"              "336_3_VZ"              "336_4_VZ"              "334_1_CP"             
+[25] "334_2_CP"              "334_3_CP"              "334_4_CP"              "209_1_CP"             
+[29] "209_2_CP"              "209_3_CP"              "209_4_CP"              "336_1_CP"             
+[33] "336_2_CP"              "336_3_CP"              "336_4_CP"             </code></pre>
 </div>
 </div>
 <div class="cell">
