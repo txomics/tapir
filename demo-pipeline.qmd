@@ -55,7 +55,10 @@ mutate(
 ) |>
 ungroup()
 
-# Inspect computed proportions
+# Verify that `iso_prop` was added as an assay
+xp
+
+# Inspect calculated proportions
 assay(xp, "iso_prop") |> round(2)
 ```
 
