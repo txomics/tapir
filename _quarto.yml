@@ -2,6 +2,11 @@ project:
   type: book
   output-dir: docs
 
+quarto-required: ">= 1.11.0"
+
+execute:
+  freeze: auto
+
 book:
   title: "TAPIR: Transcript analysis pipelines in R"
   author: "Michael Love, Justin Landis, Beatriz Campillo, Rachel Sharp"
