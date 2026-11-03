@@ -2,8 +2,16 @@
 
 This is a book created from markdown and executable code.
 
-See @knuth84 for additional discussion of literate programming.
+This will contain more conceptual information pertaining to these types of analyses and establishing a common language/goal
+
+- Challenges in long-read isoform-level datasets/analyses
+
+- DGE vs DTE vs DTU ?
+
+- Connection btw summarized experiment, plyxp, GRanges, and splicelogic
 
 ```{r}
-1 + 1
+
 ```
+
+See @knuth84 for additional discussion of literate programming.

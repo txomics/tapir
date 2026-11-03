@@ -2,4 +2,12 @@
 
 This is where the good stuff goes.
 
-Maybe a description of the major sections...
+This will be a landing page & setup guide
+
+- What is TAPIR?
+
+- Visual roadmap
+
+- Installation/setup instructions
+
+- Overview of datasets
