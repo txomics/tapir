@@ -17,7 +17,7 @@ book:
     - eda.qmd
     - testing.qmd
     - post-dtu.qmd
-    - demo-pipeline.qmd
+    - annotate-plyxp-splicelogic.qmd
     - references.qmd
 
 bibliography: references.bib
