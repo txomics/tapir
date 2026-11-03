@@ -70,63 +70,63 @@
     ]
   },
   {
-    "objectID": "demo-pipeline.html",
-    "href": "demo-pipeline.html",
-    "title": "5  Splicing Event Detection using plyxp + splicelogic",
+    "objectID": "annotate-plyxp-splicelogic.html",
+    "href": "annotate-plyxp-splicelogic.html",
+    "title": "5  Event Annotation with plyxp + splicelogic",
     "section": "",
     "text": "5.1 Setup and Dependencies\nFollowing differential transcript usage (DTU) analysis (e.g., using satuRn), we may next want to examine the specific splicing events (skipped exons, alternative splice site usage, or entron retention, e.g.) underlying observed transcript-level differences.\nIn this chapter, we demonstrate how to use plyxp and splicelogic together to compute and visualize condition-specific isoform proportions and detect skipped-exon events, using simulated transcripts.\nlibrary(SummarizedExperiment)\nlibrary(plyxp)\nlibrary(plyranges)\nlibrary(splicelogic)\nlibrary(here)\n\n# Simulation helper functions\nsource(here(\"scripts\", \"demo_sims.R\"))",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Splicing Event Detection using plyxp + splicelogic</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Event Annotation with plyxp + splicelogic</span>"
     ]
   },
   {
-    "objectID": "demo-pipeline.html#simulating-transcript-abundances",
-    "href": "demo-pipeline.html#simulating-transcript-abundances",
-    "title": "5  Splicing Event Detection using plyxp + splicelogic",
+    "objectID": "annotate-plyxp-splicelogic.html#simulating-transcript-abundances",
+    "href": "annotate-plyxp-splicelogic.html#simulating-transcript-abundances",
+    "title": "5  Event Annotation with plyxp + splicelogic",
     "section": "5.2 Simulating Transcript Abundances",
     "text": "5.2 Simulating Transcript Abundances\nTo illustrate the workflow, we simulate a minimal SummarizedExperiment containing 2 genes with 2 isoforms each across 6 samples (3 control vs. 3 treated).\n\nGene A: Undergoes isoform switching upon treatment (switching from isoform 201 to isoform 202).\nGene B: Isoform ratios remain unchanged across conditions.\n\n\nset.seed(5)\nse &lt;- simulate_se(n_per_group = 3)\nse\n\nclass: SummarizedExperiment \ndim: 4 6 \nmetadata(0):\nassays(2): counts mu\nrownames(4): A-201 A-202 B-201 B-202\nrowData names(2): isoform gene_id\ncolnames(6): s1 s2 ... s5 s6\ncolData names(1): condition",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Splicing Event Detection using plyxp + splicelogic</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Event Annotation with plyxp + splicelogic</span>"
     ]
   },
   {
-    "objectID": "demo-pipeline.html#computing-isoform-proportions-with-plyxp",
-    "href": "demo-pipeline.html#computing-isoform-proportions-with-plyxp",
-    "title": "5  Splicing Event Detection using plyxp + splicelogic",
+    "objectID": "annotate-plyxp-splicelogic.html#computing-isoform-proportions-with-plyxp",
+    "href": "annotate-plyxp-splicelogic.html#computing-isoform-proportions-with-plyxp",
+    "title": "5  Event Annotation with plyxp + splicelogic",
     "section": "5.3 Computing Isoform Proportions with plyxp",
     "text": "5.3 Computing Isoform Proportions with plyxp\nWe will start by using plyxp to wrap our SummarizedExperiment. This allows us to further manipulate the rows (features) and columns (samples) of our dataset using fast and intuitive tidy grammar. Here, we group by gene_id across rows to compute the relative isoform proportion per sample:\n\\[\\text{Isoform Proportion} = \\frac{\\text{Counts}_{\\text{isoform}}}{\\sum \\text{Counts}_{\\text{gene}}}\\]\n\nxp &lt;- se |&gt;\nnew_plyxp()\n\n# Compute isoform proportions per sample within each gene\nxp &lt;- xp |&gt;\ngroup_by(rows(gene_id)) |&gt;\nmutate(\n  iso_prop = t(t(counts) / colSums(counts))\n) |&gt;\nungroup()\n\n# Verify that `iso_prop` was added as an assay\nxp\n\n# A SummarizedExperiment-tibble Abstraction: 4 × 6\n    .features .samples | counts    mu iso_prop | gene_id isoform | condition\n    &lt;chr&gt;     &lt;chr&gt;    |  &lt;int&gt; &lt;dbl&gt;    &lt;dbl&gt; | &lt;chr&gt;   &lt;chr&gt;   | &lt;fct&gt;    \n  1 A-201     s1       |     72    80    0.809 | A       A-201   | control  \n  2 A-202     s1       |     17    20    0.191 | A       A-202   | control  \n  3 B-201     s1       |     50    50    0.446 | B       B-201   | control  \n  4 B-202     s1       |     62    50    0.554 | B       B-202   | control  \n  5 A-201     s2       |     74    80    0.787 | A       A-201   | control  \n  …   …        …              …     …      …     …         …          …     \nn-4 B-202     s5       |     47    50    0.461 | B       B-202   | treated  \nn-3 A-201     s6       |     28    20    0.267 | A       A-201   | treated  \nn-2 A-202     s6       |     77    80    0.733 | A       A-202   | treated  \nn-1 B-201     s6       |     43    50    0.5   | B       B-201   | treated  \nn   B-202     s6       |     43    50    0.5   | B       B-202   | treated  \n# ℹ n = 24\n\n# Inspect calculated proportions\nassay(xp, \"iso_prop\") |&gt; round(2)\n\n        s1   s2   s3   s4   s5   s6\nA-201 0.81 0.79 0.85 0.24 0.23 0.27\nA-202 0.19 0.21 0.15 0.76 0.77 0.73\nB-201 0.45 0.47 0.44 0.50 0.54 0.50\nB-202 0.55 0.53 0.56 0.50 0.46 0.50\n\n\nLet’s check our work by comparing these empirical proportions against the true simulation means (\\(\\mu\\)):\n\n# Ground truth means for Gene A isoforms (201 and 202)\nassay(xp, \"mu\")[1:2, ]\n\n      s1 s2 s3 s4 s5 s6\nA-201 80 80 80 20 20 20\nA-202 20 20 20 80 80 80",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Splicing Event Detection using plyxp + splicelogic</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Event Annotation with plyxp + splicelogic</span>"
     ]
   },
   {
-    "objectID": "demo-pipeline.html#summarizing-statistics-per-condition",
-    "href": "demo-pipeline.html#summarizing-statistics-per-condition",
-    "title": "5  Splicing Event Detection using plyxp + splicelogic",
+    "objectID": "annotate-plyxp-splicelogic.html#summarizing-statistics-per-condition",
+    "href": "annotate-plyxp-splicelogic.html#summarizing-statistics-per-condition",
+    "title": "5  Event Annotation with plyxp + splicelogic",
     "section": "5.4 Summarizing Statistics per Condition",
     "text": "5.4 Summarizing Statistics per Condition\nNext, we summarize the mean and standard deviation of isoform proportions within each condition (control and treated):\n\niso_stats &lt;- xp |&gt;\n  group_by(cols(condition)) |&gt;\n  summarize(\n    mean = rowMeans(iso_prop),\n    sd = rowSds(iso_prop),\n    cols(.samples = unique(condition))\n  )\n\n# Inspect mean and SD matrices\nassay(iso_stats, \"mean\") |&gt; round(2)\n\n      control treated\nA-201    0.82    0.25\nA-202    0.18    0.75\nB-201    0.45    0.51\nB-202    0.55    0.49\n\nassay(iso_stats, \"sd\") |&gt; round(3)\n\n      control treated\nA-201   0.031   0.018\nA-202   0.031   0.018\nB-201   0.014   0.023\nB-202   0.014   0.023",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Splicing Event Detection using plyxp + splicelogic</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Event Annotation with plyxp + splicelogic</span>"
     ]
   },
   {
-    "objectID": "demo-pipeline.html#annotating-transcript-exons",
-    "href": "demo-pipeline.html#annotating-transcript-exons",
-    "title": "5  Splicing Event Detection using plyxp + splicelogic",
+    "objectID": "annotate-plyxp-splicelogic.html#annotating-transcript-exons",
+    "href": "annotate-plyxp-splicelogic.html#annotating-transcript-exons",
+    "title": "5  Event Annotation with plyxp + splicelogic",
     "section": "5.5 Annotating Transcript Exons",
     "text": "5.5 Annotating Transcript Exons\nTo map statistical changes to genomic coordinates, we generate a GRanges representation of our simulated transcripts.\nIn this structure: * Isoform 201: Includes the middle cassette exon. * Isoform 202: Skips the middle cassette exon (associated with a positive DTU coefficient).\n\nexons &lt;- simulate_exons()\nexons\n\nGRanges object with 10 ranges and 5 metadata columns:\n       seqnames    ranges strand |       tx_id     gene_id exon_rank\n          &lt;Rle&gt; &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt; &lt;character&gt; &lt;integer&gt;\n   [1]     chr1   101-300      + |       A-201           A         1\n   [2]     chr1   401-600      + |       A-201           A         2\n   [3]     chr1   700-900      + |       A-201           A         3\n   [4]     chr1   101-300      + |       A-202           A         1\n   [5]     chr1   700-900      + |       A-202           A         2\n   [6]     chr1 1101-1300      + |       B-201           B         1\n   [7]     chr1 1401-1600      + |       B-201           B         2\n   [8]     chr1 1700-1900      + |       B-201           B         3\n   [9]     chr1 1101-1300      + |       B-202           B         1\n  [10]     chr1 1700-1900      + |       B-202           B         2\n       coefficient    pvalue\n         &lt;numeric&gt; &lt;numeric&gt;\n   [1]        -2.0     1e-06\n   [2]        -2.0     1e-06\n   [3]        -2.0     1e-06\n   [4]         2.0     1e-06\n   [5]         2.0     1e-06\n   [6]        -0.1     6e-01\n   [7]        -0.1     6e-01\n   [8]        -0.1     6e-01\n   [9]         0.1     6e-01\n  [10]         0.1     6e-01\n  -------\n  seqinfo: 1 sequence from an unspecified genome; no seqlengths\n\n\nWe now append the per-condition summary statistics (mean and sd) to each transcript’s exon annotations, matching by tx_id (transcript ID):\n\nexons &lt;- exons |&gt;\n  mutate(\n    mean_ctl = assay(iso_stats, \"mean\")[tx_id, \"control\"],\n    mean_trt = assay(iso_stats, \"mean\")[tx_id, \"treated\"],\n    sd_ctl   = assay(iso_stats, \"sd\")[tx_id, \"control\"],\n    sd_trt   = assay(iso_stats, \"sd\")[tx_id, \"treated\"]\n  )",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Splicing Event Detection using plyxp + splicelogic</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Event Annotation with plyxp + splicelogic</span>"
     ]
   },
   {
-    "objectID": "demo-pipeline.html#identifying-skipped-exons-with-splicelogic",
-    "href": "demo-pipeline.html#identifying-skipped-exons-with-splicelogic",
-    "title": "5  Splicing Event Detection using plyxp + splicelogic",
+    "objectID": "annotate-plyxp-splicelogic.html#identifying-skipped-exons-with-splicelogic",
+    "href": "annotate-plyxp-splicelogic.html#identifying-skipped-exons-with-splicelogic",
+    "title": "5  Event Annotation with plyxp + splicelogic",
     "section": "5.6 Identifying Skipped Exons with splicelogic",
     "text": "5.6 Identifying Skipped Exons with splicelogic\nNow that we have a summary of exonic effects per condition, we can characterize the types of splicing events underlying the observed changes using splicelogic\nHere, we will use splicelogic to identify skipped exons. A skipped exon (SE) event is defined when an exon present in a transcript with a negative DTU coefficient is spliced out (skipped) in a positive-coefficient transcript of the same gene. (this is confusing - visual?)\n\n5.6.1 Preprocessing Exon Metadata\nThe preprocess() function from splicelogic designates the coefficient column and retains relevant metadata for downstream reporting:\n\nexons &lt;- exons |&gt;\n  preprocess(\n    coef_col = \"coefficient\",\n    additional_columns = c(\n      \"pvalue\",\n      \"mean_ctl\", \"mean_trt\",\n      \"sd_ctl\", \"sd_trt\"\n    )\n  )\n\n\n\n5.6.2 Finding Skipped Exons\nIn practical analyses, you would typically filter for statistically significant transcripts (e.g., FDR \\(&lt; 0.1\\)) before running event detection. Here, we analyze all transcripts to evaluate both Gene A and Gene B:\n\nskipped &lt;- exons |&gt;\n  find_skipped_exons()\n\n# Select key summary columns\nskipped |&gt;\n  select(\n    gene_id,\n    pvalue,\n    up_pvalue = event_pvalue,\n    ctl = mean_ctl, \n    trt = mean_trt,\n    up_ctl = event_mean_ctl,\n    up_trt = event_mean_trt\n  )\n\nGRanges object with 2 ranges and 7 metadata columns:\n      seqnames    ranges strand |     gene_id    pvalue up_pvalue       ctl\n         &lt;Rle&gt; &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;\n  [1]     chr1   401-600      + |           A     1e-06     1e-06  0.815093\n  [2]     chr1 1401-1600      + |           B     6e-01     6e-01  0.451985\n            trt    up_ctl    up_trt\n      &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;\n  [1]  0.247351  0.184907  0.752649\n  [2]  0.513072  0.548015  0.486928\n  -------\n  seqinfo: 1 sequence from an unspecified genome; no seqlengths\n\n\n\n\n5.6.3 Interpretation of Results\n\nGene A: Two transcripts show significant DTU. The transcript containing the cassette exon is down-regulated upon treatment (mean proportion drops from \\(0.80 \\rightarrow 0.20\\)), while the isoform excluding this exon is up-regulated (\\(0.20 \\rightarrow 0.80\\)). find_skipped_exons() successfully pinpoints this coordinates-level cassette exon event.\nGene B: No significant isoform shift occurs between conditions.",
     "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Splicing Event Detection using plyxp + splicelogic</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Event Annotation with plyxp + splicelogic</span>"
     ]
   },
   {

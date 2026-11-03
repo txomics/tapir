@@ -63,7 +63,7 @@ assay(xp, "iso_prop") |> round(2)
 ```
 
 Let's check our work by comparing these empirical proportions against the true simulation means ($\mu$):
-  
+
 ```{r check-true-means}
 # Ground truth means for Gene A isoforms (201 and 202)
 assay(xp, "mu")[1:2, ]
@@ -72,7 +72,7 @@ assay(xp, "mu")[1:2, ]
 ## Summarizing Statistics per Condition
 
 Next, we summarize the mean and standard deviation of isoform proportions within each condition (`control` and `treated`):
-  
+
 ```{r condition-stats}
 iso_stats <- xp |>
   group_by(cols(condition)) |>
@@ -89,11 +89,9 @@ assay(iso_stats, "sd") |> round(3)
 
 ## Annotating Transcript Exons
 
-To map statistical changes to genomic coordinates, we generate a `GRanges` representation of our simulated transcripts. 
+To map statistical changes to genomic coordinates, we generate a `GRanges` representation of our simulated transcripts.
 
-In this structure:
-  * **Isoform 201:** Includes the middle cassette exon.
-* **Isoform 202:** Skips the middle cassette exon (associated with a positive DTU coefficient).
+In this structure: \* **Isoform 201:** Includes the middle cassette exon. \* **Isoform 202:** Skips the middle cassette exon (associated with a positive DTU coefficient).
 
 ```{r simulate-exons}
 exons <- simulate_exons()
@@ -119,6 +117,7 @@ Now that we have a summary of exonic effects per condition, we can characterize 
 Here, we will use splicelogic to identify skipped exons. A skipped exon (SE) event is defined when an exon present in a transcript with a negative DTU coefficient is spliced out (skipped) in a positive-coefficient transcript of the same gene. (this is confusing - visual?)
 
 ### Preprocessing Exon Metadata
+
 The `preprocess()` function from `splicelogic` designates the coefficient column and retains relevant metadata for downstream reporting:
 
 ```{r preprocess-exons}
@@ -134,6 +133,7 @@ exons <- exons |>
 ```
 
 ### Finding Skipped Exons
+
 In practical analyses, you would typically filter for statistically significant transcripts (e.g., FDR $< 0.1$) before running event detection. Here, we analyze all transcripts to evaluate both Gene A and Gene B:
 
 ```{r find-skipped}
@@ -155,5 +155,5 @@ skipped |>
 
 ### Interpretation of Results
 
-* **Gene A:** Two transcripts show significant DTU. The transcript containing the cassette exon is down-regulated upon treatment (mean proportion drops from $0.80 \rightarrow 0.20$), while the isoform excluding this exon is up-regulated ($0.20 \rightarrow 0.80$). `find_skipped_exons()` successfully pinpoints this coordinates-level cassette exon event.
-* **Gene B:** No significant isoform shift occurs between conditions.
+- **Gene A:** Two transcripts show significant DTU. The transcript containing the cassette exon is down-regulated upon treatment (mean proportion drops from $0.80 \rightarrow 0.20$), while the isoform excluding this exon is up-regulated ($0.20 \rightarrow 0.80$). `find_skipped_exons()` successfully pinpoints this coordinates-level cassette exon event.
+- **Gene B:** No significant isoform shift occurs between conditions.
