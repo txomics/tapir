@@ -1,5 +1,5 @@
 ---
-title: "Splicing Event Detection using plyxp + splicelogic"
+title: "Event Annotation with plyxp + splicelogic"
 execute:
   eval: true
   message: false
