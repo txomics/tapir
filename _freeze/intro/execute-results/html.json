@@ -1,9 +1,11 @@
 {
-  "hash": "e514ad799b2b10ced9d02b36ca26bbd2",
+  "hash": "91f3c6103ff91f81ec765fdfd74cea12",
   "result": {
     "engine": "knitr",
-    "markdown": "# Introduction\n\nThis is a book created from markdown and executable code.\n\nSee @knuth84 for additional discussion of literate programming.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1] 2\n```\n\n\n:::\n:::\n\n",
-    "supporting": [],
+    "markdown": "# Introduction\n\nThis is a book created from markdown and executable code.\n\nThis will contain more conceptual information pertaining to these types of analyses and establishing a common language/goal\n\n- Challenges in long-read isoform-level datasets/analyses\n\n- DGE vs DTE vs DTU ?\n\n- Connection btw summarized experiment, plyxp, GRanges, and splicelogic\n\n\n::: {.cell}\n\n:::\n\n\nSee @knuth84 for additional discussion of literate programming.\n",
+    "supporting": [
+      "intro_files"
+    ],
     "filters": [
       "rmarkdown/pagebreak.lua"
     ],

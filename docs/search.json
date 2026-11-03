@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "TAPIR: Transcript analysis pipelines in R",
     "section": "",
-    "text": "Book contents\nThis is where the good stuff goes.\nMaybe a description of the major sections…",
+    "text": "Book contents\nThis is where the good stuff goes.\nThis will be a landing page & setup guide\n\nWhat is TAPIR?\nVisual roadmap\nInstallation/setup instructions\nOverview of datasets",
     "crumbs": [
       "Book contents"
     ]
@@ -14,7 +14,7 @@
     "href": "intro.html",
     "title": "1  Introduction",
     "section": "",
-    "text": "This is a book created from markdown and executable code.\nSee Knuth (1984) for additional discussion of literate programming.\n\n1 + 1\n\n[1] 2\n\n\n\n\n\n\nKnuth, Donald E. 1984. “Literate Programming.” Comput. J. (USA) 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "text": "This is a book created from markdown and executable code.\nThis will contain more conceptual information pertaining to these types of analyses and establishing a common language/goal\n\nChallenges in long-read isoform-level datasets/analyses\nDGE vs DTE vs DTU ?\nConnection btw summarized experiment, plyxp, GRanges, and splicelogic\n\nSee Knuth (1984) for additional discussion of literate programming.\n\n\n\n\nKnuth, Donald E. 1984. “Literate Programming.” Comput. J. (USA) 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
     ]
