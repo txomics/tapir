@@ -1,13 +1,72 @@
-# Book contents {.unnumbered}
+# Welcome {.unnumbered}
 
-This is where the good stuff goes.
+Welcome to **TAPIR (Transcript Analysis Pipelines in R)**, an open-source guide for analyzing long-read RNA sequencing data in R.
 
-This will be a landing page & setup guide
+While long-read sequencing technologies enable full-length isoform resolution, downstream analysis in R often requires juggling transcript-level count matrices, gene-level aggregations, and exon-level genomic coordinates. Here, we provide modular workflows guiding you from \[transcript abundance tables\] all the way to \[biological interpretation\].
 
-- What is TAPIR?
+## Who this book is for {.unnumbered}
 
-- Visual roadmap
+- **You've analyzed short-read RNA-seq and now have long-read data.** Start with the [Introduction](intro.qmd). (Expand here, describe different usage cases)
+- **Your sequencing core sent you a GTF and a count table.** The section [Where TAPIR fits](intro.qmd#where-tapir-fits) gives an introduction to...; then pick a workflow below.
+- **You build tools or teach.** We design discrete, modular tools that can be used on their own or stacked with other workflows, and we welcome new ones (see *Contributing and citing* below).
 
-- Installation/setup instructions
+You don't need prior long-read experience. Some familiarity with R and the tidyverse will help.
 
-- Overview of datasets
+## How to use this book {.unnumbered}
+
+- **Part I: Foundations** introduces the concepts.
+- **Part II: Workflows** are independent, hands-on analyses of real datasets.
+
+Each workflow carries badges so you can tell at a glance whether it suits you:
+
+[R]{.badge .rounded-pill .text-bg-primary} [Also works with short reads]{.badge .rounded-pill .text-bg-success} [Beginner]{.badge .rounded-pill .text-bg-light}
+
+## Workflows at a glance {.unnumbered}
+
+| Workflow | The question | Dataset | Key packages |
+|:---|:---|:---|:---|
+| [**Exploring a long-read transcriptome**](eda.qmd) | What did we detect, and how much of it is novel? | Gandal *et al.*, developing human brain (PacBio Iso-Seq, TALON) | `readr`, `dplyr`, `plyxp` |
+| [**Gene- and transcript-level testing**](testing.qmd) | Which genes change in total, and which change their isoform mix? | Glinos *et al.*, PTBP1 knockdown (ONT, GTEx v9) | `tximeta`, `DESeq2`, `satuRn`, `plyxp`, `Glimma` |
+| [**Splicing events, step by step**](annotate-plyxp-splicelogic.qmd) | How do I go from a DTU result to a specific splicing event? | Small simulated dataset | `plyxp`, `splicelogic` |
+| [**Splicing events in real data**](post-dtu.qmd) | Which exons does PTBP1 regulate, and what sequence surrounds them? | PTBP1 knockdown | `splicelogic`, `plyranges`, `Biostrings`, `SPLain` |
+| **Allele-specific expression** *(coming soon)* | Is one parental copy of a gene expressed more than the other? | *TBD* | GATK, `samtools`, … |
+
+## Featured tools {.unnumbered}
+
+[**`plyxp`**](https://bioconductor.org/packages/plyxp): tidy verbs (`mutate()`, `filter()`, `group_by()`, `summarize()`) for `SummarizedExperiment` objects. (Succinct description of the benefit/use case of plyxp) Grouping transcripts by gene to compute isoform proportions becomes a single readable step. *Landis & Love (2026), [doi:10.64898/2026.05.06.721669](https://doi.org/10.64898/2026.05.06.721669)*
+
+[**`splicelogic`**](https://bioconductor.org/packages/splicelogic): turns any two sets of transcripts into discrete splicing events. It reports skipped and included exons, mutually exclusive exons, retained introns, alternative 5′/3′ splice sites, and alternative transcription start/end sites. The two sets can come from the results of any DTU method or from a simple split such as novel vs. annotated isoforms. Results come back as genomic ranges, ready for `plyranges` and `Biostrings`. (Is this a good enough description? Update as needed) *Campillo & Love (2026), [doi:10.64898/2026.10.30.762958](https://doi.org/10.64898/2026.10.30.762958)*
+
+## Getting started {.unnumbered}
+
+You'll need **R ≥ 4.6** and **Bioconductor ≥ 3.23**.
+
+``` r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install(c(
+  # Containers and tidy grammar
+  "SummarizedExperiment", "GenomicRanges", "GenomicFeatures",
+  "plyxp", "plyranges", "dplyr", "tidyr", "readr", "stringr", "tibble", "here",
+
+  # Import, annotation and statistics
+  "tximeta", "DESeq2", "satuRn", "limma", "org.Hs.eg.db", "AnnotationDbi",
+
+  # Splicing events, sequences and visualization
+  "splicelogic", "Biostrings", "BSgenome.Hsapiens.UCSC.hg38",
+  "Glimma", "htmlwidgets", "shiny"
+))
+```
+
+Some workflows also use the interactive [SPLain](https://github.com/beamimc/SPLain) app:
+
+``` bash
+git clone https://github.com/beamimc/SPLain.git
+```
+
+## Contributing and citing {.unnumbered}
+
+TAPIR is open source at [github.com/txomics/tapir](https://github.com/txomics/tapir). If you have a long-read dataset or workflow you'd like to share, or you spot a problem, please [open an issue](https://github.com/txomics/tapir/issues).
+
+If TAPIR or its featured tools help your work, please cite the papers listed under *Featured tools*.

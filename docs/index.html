@@ -6,8 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Michael Love, Justin Landis, Beatriz Campillo, Rachel Sharp">
-<meta name="dcterms.date" content="2024-05-29">
+<meta name="author" content="Michael Love, Justin Landis, Beatriz Campillo, and Rachel Sharp">
+<meta name="dcterms.date" content="2026-11-18">
 
 <title>TAPIR: Transcript analysis pipelines in R</title>
 <style>
@@ -27,6 +27,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -90,7 +125,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Book contents</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Welcome</a></li></ol></nav>
         <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -106,6 +141,9 @@ ul.task-list li input[type="checkbox"] {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">TAPIR: Transcript analysis pipelines in R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/txomics/tapir" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -118,39 +156,55 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Book contents</span></a>
+ <span class="menu-text">Welcome</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Foundations</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./intro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-controls="quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text" id="quarto-sidebar-section-2-label">Workflows</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-2" aria-labelledby="quarto-sidebar-section-2-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./eda.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Exploratory data analysis</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./testing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Statistical testing</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./post-dtu.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./annotate-plyxp-splicelogic.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Event Annotation with plyxp + splicelogic</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Event Annotation with plyxp + splicelogic</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./post-dtu.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
@@ -167,7 +221,15 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#book-contents" id="toc-book-contents" class="nav-link active" data-scroll-target="#book-contents">Book contents</a></li>
+  <li><a href="#welcome" id="toc-welcome" class="nav-link active" data-scroll-target="#welcome">Welcome</a>
+  <ul class="collapse">
+  <li><a href="#who-this-book-is-for" id="toc-who-this-book-is-for" class="nav-link" data-scroll-target="#who-this-book-is-for">Who this book is for</a></li>
+  <li><a href="#how-to-use-this-book" id="toc-how-to-use-this-book" class="nav-link" data-scroll-target="#how-to-use-this-book">How to use this book</a></li>
+  <li><a href="#workflows-at-a-glance" id="toc-workflows-at-a-glance" class="nav-link" data-scroll-target="#workflows-at-a-glance">Workflows at a glance</a></li>
+  <li><a href="#featured-tools" id="toc-featured-tools" class="nav-link" data-scroll-target="#featured-tools">Featured tools</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a></li>
+  <li><a href="#contributing-and-citing" id="toc-contributing-and-citing" class="nav-link" data-scroll-target="#contributing-and-citing">Contributing and citing</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -177,6 +239,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">TAPIR: Transcript analysis pipelines in R</h1>
+<p class="subtitle lead">A field guide to long-read RNA-seq analysis</p>
 </div>
 
 
@@ -186,14 +249,14 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Michael Love, Justin Landis, Beatriz Campillo, Rachel Sharp </p>
+             <p>Michael Love, Justin Landis, Beatriz Campillo, and Rachel Sharp </p>
           </div>
   </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 29, 2024</p>
+      <p class="date">November 18, 2026</p>
     </div>
   </div>
   
@@ -205,18 +268,106 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="book-contents" class="level1 unnumbered">
-<h1 class="unnumbered">Book contents</h1>
-<p>This is where the good stuff goes.</p>
-<p>This will be a landing page &amp; setup guide</p>
+<section id="welcome" class="level1 unnumbered">
+<h1 class="unnumbered">Welcome</h1>
+<p>Welcome to <strong>TAPIR (Transcript Analysis Pipelines in R)</strong>, an open-source guide for analyzing long-read RNA sequencing data in R.</p>
+<p>While long-read sequencing technologies enable full-length isoform resolution, downstream analysis in R often requires juggling transcript-level count matrices, gene-level aggregations, and exon-level genomic coordinates. Here, we provide modular workflows guiding you from [transcript abundance tables] all the way to [biological interpretation].</p>
+<section id="who-this-book-is-for" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="who-this-book-is-for">Who this book is for</h2>
 <ul>
-<li><p>What is TAPIR?</p></li>
-<li><p>Visual roadmap</p></li>
-<li><p>Installation/setup instructions</p></li>
-<li><p>Overview of datasets</p></li>
+<li><strong>You’ve analyzed short-read RNA-seq and now have long-read data.</strong> Start with the <a href="./intro.html">Introduction</a>. (Expand here, describe different usage cases)</li>
+<li><strong>Your sequencing core sent you a GTF and a count table.</strong> The section <a href="./intro.html#where-tapir-fits">Where TAPIR fits</a> gives an introduction to…; then pick a workflow below.</li>
+<li><strong>You build tools or teach.</strong> We design discrete, modular tools that can be used on their own or stacked with other workflows, and we welcome new ones (see <em>Contributing and citing</em> below).</li>
 </ul>
+<p>You don’t need prior long-read experience. Some familiarity with R and the tidyverse will help.</p>
+</section>
+<section id="how-to-use-this-book" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="how-to-use-this-book">How to use this book</h2>
+<ul>
+<li><strong>Part I: Foundations</strong> introduces the concepts.</li>
+<li><strong>Part II: Workflows</strong> are independent, hands-on analyses of real datasets.</li>
+</ul>
+<p>Each workflow carries badges so you can tell at a glance whether it suits you:</p>
+<p><span class="badge rounded-pill text-bg-primary">R</span> <span class="badge rounded-pill text-bg-success">Also works with short reads</span> <span class="badge rounded-pill text-bg-light">Beginner</span></p>
+</section>
+<section id="workflows-at-a-glance" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="workflows-at-a-glance">Workflows at a glance</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Workflow</th>
+<th style="text-align: left;">The question</th>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Key packages</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><a href="./eda.html"><strong>Exploring a long-read transcriptome</strong></a></td>
+<td style="text-align: left;">What did we detect, and how much of it is novel?</td>
+<td style="text-align: left;">Gandal <em>et al.</em>, developing human brain (PacBio Iso-Seq, TALON)</td>
+<td style="text-align: left;"><code>readr</code>, <code>dplyr</code>, <code>plyxp</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="./testing.html"><strong>Gene- and transcript-level testing</strong></a></td>
+<td style="text-align: left;">Which genes change in total, and which change their isoform mix?</td>
+<td style="text-align: left;">Glinos <em>et al.</em>, PTBP1 knockdown (ONT, GTEx v9)</td>
+<td style="text-align: left;"><code>tximeta</code>, <code>DESeq2</code>, <code>satuRn</code>, <code>plyxp</code>, <code>Glimma</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a href="./annotate-plyxp-splicelogic.html"><strong>Splicing events, step by step</strong></a></td>
+<td style="text-align: left;">How do I go from a DTU result to a specific splicing event?</td>
+<td style="text-align: left;">Small simulated dataset</td>
+<td style="text-align: left;"><code>plyxp</code>, <code>splicelogic</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a href="./post-dtu.html"><strong>Splicing events in real data</strong></a></td>
+<td style="text-align: left;">Which exons does PTBP1 regulate, and what sequence surrounds them?</td>
+<td style="text-align: left;">PTBP1 knockdown</td>
+<td style="text-align: left;"><code>splicelogic</code>, <code>plyranges</code>, <code>Biostrings</code>, <code>SPLain</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Allele-specific expression</strong> <em>(coming soon)</em></td>
+<td style="text-align: left;">Is one parental copy of a gene expressed more than the other?</td>
+<td style="text-align: left;"><em>TBD</em></td>
+<td style="text-align: left;">GATK, <code>samtools</code>, …</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="featured-tools" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="featured-tools">Featured tools</h2>
+<p><a href="https://bioconductor.org/packages/plyxp"><strong><code>plyxp</code></strong></a>: tidy verbs (<code>mutate()</code>, <code>filter()</code>, <code>group_by()</code>, <code>summarize()</code>) for <code>SummarizedExperiment</code> objects. (Succinct description of the benefit/use case of plyxp) Grouping transcripts by gene to compute isoform proportions becomes a single readable step. <em>Landis &amp; Love (2026), <a href="https://doi.org/10.64898/2026.05.06.721669">doi:10.64898/2026.05.06.721669</a></em></p>
+<p><a href="https://bioconductor.org/packages/splicelogic"><strong><code>splicelogic</code></strong></a>: turns any two sets of transcripts into discrete splicing events. It reports skipped and included exons, mutually exclusive exons, retained introns, alternative 5′/3′ splice sites, and alternative transcription start/end sites. The two sets can come from the results of any DTU method or from a simple split such as novel vs.&nbsp;annotated isoforms. Results come back as genomic ranges, ready for <code>plyranges</code> and <code>Biostrings</code>. (Is this a good enough description? Update as needed) <em>Campillo &amp; Love (2026), <a href="https://doi.org/10.64898/2026.10.30.762958">doi:10.64898/2026.10.30.762958</a></em></p>
+</section>
+<section id="getting-started" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="getting-started">Getting started</h2>
+<p>You’ll need <strong>R ≥ 4.6</strong> and <strong>Bioconductor ≥ 3.23</strong>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">"BiocManager"</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">"BiocManager"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>BiocManager<span class="sc">::</span><span class="fu">install</span>(<span class="fu">c</span>(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Containers and tidy grammar</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"SummarizedExperiment"</span>, <span class="st">"GenomicRanges"</span>, <span class="st">"GenomicFeatures"</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"plyxp"</span>, <span class="st">"plyranges"</span>, <span class="st">"dplyr"</span>, <span class="st">"tidyr"</span>, <span class="st">"readr"</span>, <span class="st">"stringr"</span>, <span class="st">"tibble"</span>, <span class="st">"here"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Import, annotation and statistics</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tximeta"</span>, <span class="st">"DESeq2"</span>, <span class="st">"satuRn"</span>, <span class="st">"limma"</span>, <span class="st">"org.Hs.eg.db"</span>, <span class="st">"AnnotationDbi"</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Splicing events, sequences and visualization</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"splicelogic"</span>, <span class="st">"Biostrings"</span>, <span class="st">"BSgenome.Hsapiens.UCSC.hg38"</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Glimma"</span>, <span class="st">"htmlwidgets"</span>, <span class="st">"shiny"</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Some workflows also use the interactive <a href="https://github.com/beamimc/SPLain">SPLain</a> app:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/beamimc/SPLain.git</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="contributing-and-citing" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="contributing-and-citing">Contributing and citing</h2>
+<p>TAPIR is open source at <a href="https://github.com/txomics/tapir">github.com/txomics/tapir</a>. If you have a long-read dataset or workflow you’d like to share, or you spot a problem, please <a href="https://github.com/txomics/tapir/issues">open an issue</a>.</p>
+<p>If TAPIR or its featured tools help your work, please cite the papers listed under <em>Featured tools</em>.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

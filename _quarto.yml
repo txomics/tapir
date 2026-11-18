@@ -9,15 +9,21 @@ execute:
 
 book:
   title: "TAPIR: Transcript analysis pipelines in R"
-  author: "Michael Love, Justin Landis, Beatriz Campillo, Rachel Sharp"
-  date: "5/29/2024"
+  subtitle: "A field guide to long-read RNA-seq analysis"
+  author: "Michael Love, Justin Landis, Beatriz Campillo, and Rachel Sharp"
+  date: "11/18/2026"
+  repo-url: https://github.com/txomics/tapir
   chapters:
     - index.qmd
-    - intro.qmd
-    - eda.qmd
-    - testing.qmd
-    - post-dtu.qmd
-    - annotate-plyxp-splicelogic.qmd
+    - part: "Foundations"                                            # NEW: parts group the sidebar
+      chapters:
+        - intro.qmd
+    - part: "Workflows"
+      chapters:
+        - eda.qmd
+        - testing.qmd
+        - annotate-plyxp-splicelogic.qmd
+        - post-dtu.qmd
     - references.qmd
 
 bibliography: references.bib

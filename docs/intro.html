@@ -96,6 +96,35 @@ div.csl-indent {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -108,7 +137,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Foundations</a></li><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
         <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -124,6 +153,9 @@ div.csl-indent {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">TAPIR: Transcript analysis pipelines in R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/txomics/tapir" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -136,39 +168,55 @@ div.csl-indent {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Book contents</span></a>
+ <span class="menu-text">Welcome</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-controls="quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text" id="quarto-sidebar-section-1-label">Foundations</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-1" aria-labelledby="quarto-sidebar-section-1-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./intro.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <button type="button" class="sidebar-item-text sidebar-item-toggle sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-controls="quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text" id="quarto-sidebar-section-2-label">Workflows</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+      </div>
+      <ul id="quarto-sidebar-section-2" aria-labelledby="quarto-sidebar-section-2-label" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./eda.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Exploratory data analysis</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./testing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Statistical testing</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./post-dtu.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./annotate-plyxp-splicelogic.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Event Annotation with plyxp + splicelogic</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Event Annotation with plyxp + splicelogic</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./post-dtu.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Post DTU Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
@@ -180,13 +228,30 @@ div.csl-indent {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#where-tapir-fits-in-the-long-read-lifecycle" id="toc-where-tapir-fits-in-the-long-read-lifecycle" class="nav-link active" data-scroll-target="#where-tapir-fits-in-the-long-read-lifecycle"><span class="header-section-number">1.1</span> 1.1 Where TAPIR Fits in the Long-Read Lifecycle</a>
+  <ul class="collapse">
+  <li><a href="#upstream-inputs-expected-by-tapir" id="toc-upstream-inputs-expected-by-tapir" class="nav-link" data-scroll-target="#upstream-inputs-expected-by-tapir"><span class="header-section-number">1.1.1</span> Upstream Inputs Expected by TAPIR</a></li>
+  </ul></li>
+  <li><a href="#gene-level-vs.-transcript-level-testing-dge-vs.-dtu" id="toc-gene-level-vs.-transcript-level-testing-dge-vs.-dtu" class="nav-link" data-scroll-target="#gene-level-vs.-transcript-level-testing-dge-vs.-dtu"><span class="header-section-number">1.2</span> 1.2 Gene-Level vs.&nbsp;Transcript-Level Testing (DGE vs.&nbsp;DTU)</a></li>
+  <li><a href="#the-data-grammar-of-tapir" id="toc-the-data-grammar-of-tapir" class="nav-link" data-scroll-target="#the-data-grammar-of-tapir"><span class="header-section-number">1.3</span> 1.3 The Data Grammar of TAPIR</a>
+  <ul class="collapse">
+  <li><a href="#manipulating-expression-containers-with-plyxp" id="toc-manipulating-expression-containers-with-plyxp" class="nav-link" data-scroll-target="#manipulating-expression-containers-with-plyxp"><span class="header-section-number">1.3.1</span> 1. Manipulating Expression Containers with <code>plyxp</code></a></li>
+  </ul></li>
+  <li><a href="#wrap-a-summarizedexperiment-object" id="toc-wrap-a-summarizedexperiment-object" class="nav-link" data-scroll-target="#wrap-a-summarizedexperiment-object"><span class="header-section-number">2</span> Wrap a SummarizedExperiment object</a></li>
+  <li><a href="#group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively" id="toc-group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively" class="nav-link" data-scroll-target="#group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively"><span class="header-section-number">3</span> 1. Group by gene_id across rows to compute per-sample isoform proportions natively</a></li>
+  <li><a href="#summarize-assay-statistics-across-sample-conditions-coldata" id="toc-summarize-assay-statistics-across-sample-conditions-coldata" class="nav-link" data-scroll-target="#summarize-assay-statistics-across-sample-conditions-coldata"><span class="header-section-number">4</span> 2. Summarize assay statistics across sample conditions (colData)</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content" tabindex="-1">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Foundations</a></li><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></h1>
 </div>
@@ -212,6 +277,73 @@ div.csl-indent {
 <li><p>DGE vs DTE vs DTU ?</p></li>
 <li><p>Connection btw summarized experiment, plyxp, GRanges, and splicelogic</p></li>
 </ul>
+<p>```markdown # Introduction</p>
+<p>Long-read RNA sequencing platforms—such as Pacific Biosciences (PacBio Iso-Seq and Kinnex) and Oxford Nanopore Technologies (ONT)—have transformed transcriptomics by capturing full-length RNA and cDNA molecules in single reads. Unlike short-read sequencing, which must probabilistically infer exon connectivity across fragmented reads, long-read sequencing directly resolves complete splice-junction chains, alternative transcription start and end sites (TSS/TES), and novel transcript isoforms.</p>
+<p>However, moving from raw long-read quantifications to biological insight introduces unique data-wrangling and statistical hurdles. <strong>TAPIR</strong> is designed to bridge the gap between upstream isoform quantification and downstream functional interpretation in R.</p>
+<hr>
+<section id="where-tapir-fits-in-the-long-read-lifecycle" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="where-tapir-fits-in-the-long-read-lifecycle"><span class="header-section-number">1.1</span> 1.1 Where TAPIR Fits in the Long-Read Lifecycle</h2>
+<section id="upstream-inputs-expected-by-tapir" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="upstream-inputs-expected-by-tapir"><span class="header-section-number">1.1.1</span> Upstream Inputs Expected by TAPIR</h3>
+<p>TAPIR begins after your reads have been aligned, assembled, and quantified. Depending on your upstream pipeline (such as <code>oarfish</code>, <code>TALON</code>, <code>FLAIR</code>, <code>bambu</code>, or <code>IsoQuant</code>), you will typically bring three files into R:</p>
+<ol type="1">
+<li><strong>A transcript-level count matrix</strong> (rows as discovered/annotated isoforms, columns as samples).</li>
+<li><strong>A sample metadata table</strong> describing experimental conditions, batches, and sequencing depth.</li>
+<li><strong>A transcriptome annotation (<code>.gtf</code> / <code>.gff</code> or <code>SQANTI3</code> classification table)</strong> defining the exon-intron coordinates of both reference (e.g., GENCODE) and newly discovered isoforms, alongside structural novelty categories:
+<ul>
+<li><strong>FSM (Full Splice Match):</strong> Matches a reference transcript across all splice junctions.</li>
+<li><strong>ISM (Incomplete Splice Match):</strong> Matches consecutive splice junctions of a reference transcript but is shorter at the 5’ and/or 3’ end.</li>
+<li><strong>NIC (Novel in Catalog):</strong> Contains novel combinations of known splice donors/acceptors.</li>
+<li><strong>NNC (Novel Not in Catalog):</strong> Uses at least one novel splice donor or acceptor site.</li>
+</ul></li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="gene-level-vs.-transcript-level-testing-dge-vs.-dtu" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="gene-level-vs.-transcript-level-testing-dge-vs.-dtu"><span class="header-section-number">1.2</span> 1.2 Gene-Level vs.&nbsp;Transcript-Level Testing (DGE vs.&nbsp;DTU)</h2>
+<p>Because a single gene can produce multiple functionally distinct isoforms, long-read data allows us to test complementary biological hypotheses (covered in <strong>Chapter 3</strong>):</p>
+<ul>
+<li><strong>Differential Gene Expression (DGE):</strong> <em>Does the overall transcriptional output of a gene change between conditions?</em> To test DGE, transcript counts are aggregated to the gene level (using <code>tximeta::summarizeToGene()</code>) and modeled with <code>DESeq2</code>.</li>
+<li><strong>Differential Transcript Usage (DTU):</strong> <em>Do the relative proportions of isoforms within a gene shift between conditions?</em> A gene can undergo a dramatic isoform switch—for instance, shifting from <span class="math inline">\(80\%\)</span> Isoform A / <span class="math inline">\(20\%\)</span> Isoform B in control samples to <span class="math inline">\(20\%\)</span> Isoform A / <span class="math inline">\(80\%\)</span> Isoform B upon treatment—even if total gene-level expression remains completely unchanged. We model DTU using <code>satuRn</code>.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why DTU Requires Specialized Pre-filtering
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In long-read datasets, tens of thousands of low-abundance or single-isoform transcripts are often detected. Before fitting DTU models, we must remove genes that only express a single isoform (as usage proportions cannot shift if only one isoform exists) and filter out lowly expressed transcripts to preserve statistical power.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="the-data-grammar-of-tapir" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="the-data-grammar-of-tapir"><span class="header-section-number">1.3</span> 1.3 The Data Grammar of TAPIR</h2>
+<p>A central goal of TAPIR is to make multi-layered genomic data easy to read, write, and debug. Throughout this book, we rely on two complementary tidy Bioconductor frameworks:</p>
+<section id="manipulating-expression-containers-with-plyxp" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="manipulating-expression-containers-with-plyxp"><span class="header-section-number">1.3.1</span> 1. Manipulating Expression Containers with <code>plyxp</code></h3>
+<p>In Bioconductor, transcript quantifications are stored in a <code>SummarizedExperiment</code> object, which links one or more <strong>assays</strong> (e.g., <code>counts</code>, <code>abundance</code>, <code>iso_prop</code>) with feature metadata (<strong><code>rowData</code></strong>, describing transcripts and genes) and sample metadata (<strong><code>colData</code></strong>, describing experimental groups).</p>
+<p>Wrapping a <code>SummarizedExperiment</code> with <code>new_plyxp()</code> allows you to use familiar <code>dplyr</code> verbs directly on the object via contextual scoping functions (<code>rows()</code> and <code>cols()</code>) without manual matrix transpositions:</p>
+<p>```{r} #| eval: false</p>
+<p>library(plyxp) library(SummarizedExperiment)</p>
+</section>
+</section>
+<section id="wrap-a-summarizedexperiment-object" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Wrap a SummarizedExperiment object</h1>
+<p>xp &lt;- se |&gt; new_plyxp()</p>
+</section>
+<section id="group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> 1. Group by gene_id across rows to compute per-sample isoform proportions natively</h1>
+<p>xp &lt;- xp |&gt; group_by(rows(gene_id)) |&gt; mutate(iso_prop = counts / sum(counts)) |&gt; ungroup()</p>
+</section>
+<section id="summarize-assay-statistics-across-sample-conditions-coldata" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> 2. Summarize assay statistics across sample conditions (colData)</h1>
+<p>iso_stats &lt;- xp |&gt; group_by(cols(condition)) |&gt; summarize( mean = rowMeans(iso_prop), sd = rowSds(iso_prop), cols(.samples = unique(condition)) )</p>
 <p>See <span class="citation" data-cites="knuth84">Knuth (<a href="references.html#ref-knuth84" role="doc-biblioref">1984</a>)</span> for additional discussion of literate programming.</p>
 
 
@@ -220,6 +352,7 @@ div.csl-indent {
 Knuth, Donald E. 1984. <span>“Literate Programming.”</span> <em>Comput. J.</em> (USA) 27 (2): 97–111. <a href="https://doi.org/10.1093/comjnl/27.2.97">https://doi.org/10.1093/comjnl/27.2.97</a>.
 </div>
 </div>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -700,8 +833,8 @@ Knuth, Donald E. 1984. <span>“Literate Programming.”</span> <em>Comput. J.</
   </script>
 <nav class="page-navigation" aria-label="Page">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Book contents">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Book contents</span>
+      <a href="./index.html" class="pagination-link" aria-label="Welcome">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Welcome</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

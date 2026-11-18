@@ -10,8 +10,70 @@ This will contain more conceptual information pertaining to these types of analy
 
 - Connection btw summarized experiment, plyxp, GRanges, and splicelogic
 
-```{r}
+\`\`\`markdown \# Introduction
 
-```
+Long-read RNA sequencing platforms—such as Pacific Biosciences (PacBio Iso-Seq and Kinnex) and Oxford Nanopore Technologies (ONT)—have transformed transcriptomics by capturing full-length RNA and cDNA molecules in single reads. Unlike short-read sequencing, which must probabilistically infer exon connectivity across fragmented reads, long-read sequencing directly resolves complete splice-junction chains, alternative transcription start and end sites (TSS/TES), and novel transcript isoforms.
+
+However, moving from raw long-read quantifications to biological insight introduces unique data-wrangling and statistical hurdles. **TAPIR** is designed to bridge the gap between upstream isoform quantification and downstream functional interpretation in R.
+
+------------------------------------------------------------------------
+
+## 1.1 Where TAPIR Fits in the Long-Read Lifecycle
+
+
+### Upstream Inputs Expected by TAPIR
+
+TAPIR begins after your reads have been aligned, assembled, and quantified. Depending on your upstream pipeline (such as `oarfish`, `TALON`, `FLAIR`, `bambu`, or `IsoQuant`), you will typically bring three files into R:
+
+1.  **A transcript-level count matrix** (rows as discovered/annotated isoforms, columns as samples).
+2.  **A sample metadata table** describing experimental conditions, batches, and sequencing depth.
+3.  **A transcriptome annotation (`.gtf` / `.gff` or `SQANTI3` classification table)** defining the exon-intron coordinates of both reference (e.g., GENCODE) and newly discovered isoforms, alongside structural novelty categories:
+    - **FSM (Full Splice Match):** Matches a reference transcript across all splice junctions.
+    - **ISM (Incomplete Splice Match):** Matches consecutive splice junctions of a reference transcript but is shorter at the 5' and/or 3' end.
+    - **NIC (Novel in Catalog):** Contains novel combinations of known splice donors/acceptors.
+    - **NNC (Novel Not in Catalog):** Uses at least one novel splice donor or acceptor site.
+
+------------------------------------------------------------------------
+
+## 1.2 Gene-Level vs. Transcript-Level Testing (DGE vs. DTU)
+
+Because a single gene can produce multiple functionally distinct isoforms, long-read data allows us to test complementary biological hypotheses (covered in **Chapter 3**):
+
+- **Differential Gene Expression (DGE):** *Does the overall transcriptional output of a gene change between conditions?* To test DGE, transcript counts are aggregated to the gene level (using `tximeta::summarizeToGene()`) and modeled with `DESeq2`.
+- **Differential Transcript Usage (DTU):** *Do the relative proportions of isoforms within a gene shift between conditions?* A gene can undergo a dramatic isoform switch—for instance, shifting from $80\%$ Isoform A / $20\%$ Isoform B in control samples to $20\%$ Isoform A / $80\%$ Isoform B upon treatment—even if total gene-level expression remains completely unchanged. We model DTU using `satuRn`.
+
+::: callout-tip
+### Why DTU Requires Specialized Pre-filtering
+
+In long-read datasets, tens of thousands of low-abundance or single-isoform transcripts are often detected. Before fitting DTU models, we must remove genes that only express a single isoform (as usage proportions cannot shift if only one isoform exists) and filter out lowly expressed transcripts to preserve statistical power.
+:::
+
+------------------------------------------------------------------------
+
+## 1.3 The Data Grammar of TAPIR
+
+A central goal of TAPIR is to make multi-layered genomic data easy to read, write, and debug. Throughout this book, we rely on two complementary tidy Bioconductor frameworks:
+
+### 1. Manipulating Expression Containers with `plyxp`
+
+In Bioconductor, transcript quantifications are stored in a `SummarizedExperiment` object, which links one or more **assays** (e.g., `counts`, `abundance`, `iso_prop`) with feature metadata (**`rowData`**, describing transcripts and genes) and sample metadata (**`colData`**, describing experimental groups).
+
+Wrapping a `SummarizedExperiment` with `new_plyxp()` allows you to use familiar `dplyr` verbs directly on the object via contextual scoping functions (`rows()` and `cols()`) without manual matrix transpositions:
+
+\`\`\`{r} #\| eval: false
+
+library(plyxp) library(SummarizedExperiment)
+
+# Wrap a SummarizedExperiment object
+
+xp \<- se \|\> new_plyxp()
+
+# 1. Group by gene_id across rows to compute per-sample isoform proportions natively
+
+xp \<- xp \|\> group_by(rows(gene_id)) \|\> mutate(iso_prop = counts / sum(counts)) \|\> ungroup()
+
+# 2. Summarize assay statistics across sample conditions (colData)
+
+iso_stats \<- xp \|\> group_by(cols(condition)) \|\> summarize( mean = rowMeans(iso_prop), sd = rowSds(iso_prop), cols(.samples = unique(condition)) )
 
 See @knuth84 for additional discussion of literate programming.
