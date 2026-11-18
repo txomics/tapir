@@ -24,7 +24,7 @@ Each workflow carries badges so you can tell at a glance whether it suits you:
 ## Workflows at a glance {.unnumbered}
 
 | Workflow | The question | Dataset | Key packages |
-|:---|:---|:---|:---|
+|:-----------------|:-----------------|:-----------------|:-----------------|
 | [**Exploring a long-read transcriptome**](eda.qmd) | What did we detect, and how much of it is novel? | Gandal *et al.*, developing human brain (PacBio Iso-Seq, TALON) | `readr`, `dplyr`, `plyxp` |
 | [**Gene- and transcript-level testing**](testing.qmd) | Which genes change in total, and which change their isoform mix? | Glinos *et al.*, PTBP1 knockdown (ONT, GTEx v9) | `tximeta`, `DESeq2`, `satuRn`, `plyxp`, `Glimma` |
 | [**Splicing events, step by step**](annotate-plyxp-splicelogic.qmd) | How do I go from a DTU result to a specific splicing event? | Small simulated dataset | `plyxp`, `splicelogic` |

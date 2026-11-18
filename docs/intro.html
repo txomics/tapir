@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1&nbsp; Introduction – TAPIR: Transcript analysis pipelines in R</title>
+<title>1&nbsp; Why long reads? – TAPIR: Transcript analysis pipelines in R</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,26 +26,42 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
 }
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -96,35 +112,6 @@ div.csl-indent {
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -137,7 +124,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Foundations</a></li><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Foundations</a></li><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Why long reads?</span></a></li></ol></nav>
         <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -180,7 +167,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./intro.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Why long reads?</span></span></a>
   </div>
 </li>
       </ul>
@@ -233,27 +220,25 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#where-tapir-fits-in-the-long-read-lifecycle" id="toc-where-tapir-fits-in-the-long-read-lifecycle" class="nav-link active" data-scroll-target="#where-tapir-fits-in-the-long-read-lifecycle"><span class="header-section-number">1.1</span> 1.1 Where TAPIR Fits in the Long-Read Lifecycle</a>
+  <li><a href="#one-gene-many-transcripts" id="toc-one-gene-many-transcripts" class="nav-link active" data-scroll-target="#one-gene-many-transcripts"><span class="header-section-number">1.1</span> One gene, many transcripts</a></li>
+  <li><a href="#what-short-reads-can-and-cant-tell-you" id="toc-what-short-reads-can-and-cant-tell-you" class="nav-link" data-scroll-target="#what-short-reads-can-and-cant-tell-you"><span class="header-section-number">1.2</span> What short reads can and can’t tell you</a></li>
+  <li><a href="#what-long-reads-change-and-what-they-dont" id="toc-what-long-reads-change-and-what-they-dont" class="nav-link" data-scroll-target="#what-long-reads-change-and-what-they-dont"><span class="header-section-number">1.3</span> What long reads change (and what they don’t)</a></li>
+  <li><a href="#where-tapir-fits-in-current-analysis-pipelines" id="toc-where-tapir-fits-in-current-analysis-pipelines" class="nav-link" data-scroll-target="#where-tapir-fits-in-current-analysis-pipelines"><span class="header-section-number">1.4</span> Where TAPIR fits in current analysis pipelines</a>
   <ul class="collapse">
-  <li><a href="#upstream-inputs-expected-by-tapir" id="toc-upstream-inputs-expected-by-tapir" class="nav-link" data-scroll-target="#upstream-inputs-expected-by-tapir"><span class="header-section-number">1.1.1</span> Upstream Inputs Expected by TAPIR</a></li>
+  <li><a href="#what-youll-bring-into-r-this-section-feels-misplaced-maybe-misnamed" id="toc-what-youll-bring-into-r-this-section-feels-misplaced-maybe-misnamed" class="nav-link" data-scroll-target="#what-youll-bring-into-r-this-section-feels-misplaced-maybe-misnamed"><span class="header-section-number">1.4.1</span> What you’ll bring into R (This section feels misplaced, maybe misnamed)</a></li>
   </ul></li>
-  <li><a href="#gene-level-vs.-transcript-level-testing-dge-vs.-dtu" id="toc-gene-level-vs.-transcript-level-testing-dge-vs.-dtu" class="nav-link" data-scroll-target="#gene-level-vs.-transcript-level-testing-dge-vs.-dtu"><span class="header-section-number">1.2</span> 1.2 Gene-Level vs.&nbsp;Transcript-Level Testing (DGE vs.&nbsp;DTU)</a></li>
-  <li><a href="#the-data-grammar-of-tapir" id="toc-the-data-grammar-of-tapir" class="nav-link" data-scroll-target="#the-data-grammar-of-tapir"><span class="header-section-number">1.3</span> 1.3 The Data Grammar of TAPIR</a>
-  <ul class="collapse">
-  <li><a href="#manipulating-expression-containers-with-plyxp" id="toc-manipulating-expression-containers-with-plyxp" class="nav-link" data-scroll-target="#manipulating-expression-containers-with-plyxp"><span class="header-section-number">1.3.1</span> 1. Manipulating Expression Containers with <code>plyxp</code></a></li>
-  </ul></li>
-  <li><a href="#wrap-a-summarizedexperiment-object" id="toc-wrap-a-summarizedexperiment-object" class="nav-link" data-scroll-target="#wrap-a-summarizedexperiment-object"><span class="header-section-number">2</span> Wrap a SummarizedExperiment object</a></li>
-  <li><a href="#group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively" id="toc-group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively" class="nav-link" data-scroll-target="#group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively"><span class="header-section-number">3</span> 1. Group by gene_id across rows to compute per-sample isoform proportions natively</a></li>
-  <li><a href="#summarize-assay-statistics-across-sample-conditions-coldata" id="toc-summarize-assay-statistics-across-sample-conditions-coldata" class="nav-link" data-scroll-target="#summarize-assay-statistics-across-sample-conditions-coldata"><span class="header-section-number">4</span> 2. Summarize assay statistics across sample conditions (colData)</a></li>
+  <li><a href="#four-questions-you-can-ask" id="toc-four-questions-you-can-ask" class="nav-link" data-scroll-target="#four-questions-you-can-ask"><span class="header-section-number">1.5</span> Four questions you can ask</a></li>
+  <li><a href="#tapirs-modular-toolkit" id="toc-tapirs-modular-toolkit" class="nav-link" data-scroll-target="#tapirs-modular-toolkit"><span class="header-section-number">1.6</span> TAPIR’s Modular Toolkit</a></li>
+  <li><a href="#where-to-go-next" id="toc-where-to-go-next" class="nav-link" data-scroll-target="#where-to-go-next"><span class="header-section-number">1.7</span> Where to go next</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content" tabindex="-1">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Foundations</a></li><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Foundations</a></li><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Why long reads?</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></h1>
+<h1 class="title"><span id="intro" class="quarto-section-identifier"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Why long reads?</span></span></h1>
 </div>
 
 
@@ -270,88 +255,271 @@ window.Quarto = {
 </header>
 
 
-<p>This is a book created from markdown and executable code.</p>
-<p>This will contain more conceptual information pertaining to these types of analyses and establishing a common language/goal</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>In this chapter we’ll cover…
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <ul>
-<li><p>Challenges in long-read isoform-level datasets/analyses</p></li>
-<li><p>DGE vs DTE vs DTU ?</p></li>
-<li><p>Connection btw summarized experiment, plyxp, GRanges, and splicelogic</p></li>
+<li>What an isoform is and why it matters</li>
+<li>What long-read sequencing adds to short-read RNA-seq (and what it doesn’t)</li>
+<li>Where TAPIR fits in a long-read project</li>
+<li>Four kinds of question you can ask of your data</li>
 </ul>
-<p>```markdown # Introduction</p>
-<p>Long-read RNA sequencing platforms—such as Pacific Biosciences (PacBio Iso-Seq and Kinnex) and Oxford Nanopore Technologies (ONT)—have transformed transcriptomics by capturing full-length RNA and cDNA molecules in single reads. Unlike short-read sequencing, which must probabilistically infer exon connectivity across fragmented reads, long-read sequencing directly resolves complete splice-junction chains, alternative transcription start and end sites (TSS/TES), and novel transcript isoforms.</p>
-<p>However, moving from raw long-read quantifications to biological insight introduces unique data-wrangling and statistical hurdles. <strong>TAPIR</strong> is designed to bridge the gap between upstream isoform quantification and downstream functional interpretation in R.</p>
-<hr>
-<section id="where-tapir-fits-in-the-long-read-lifecycle" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="where-tapir-fits-in-the-long-read-lifecycle"><span class="header-section-number">1.1</span> 1.1 Where TAPIR Fits in the Long-Read Lifecycle</h2>
-<section id="upstream-inputs-expected-by-tapir" class="level3" data-number="1.1.1">
-<h3 data-number="1.1.1" class="anchored" data-anchor-id="upstream-inputs-expected-by-tapir"><span class="header-section-number">1.1.1</span> Upstream Inputs Expected by TAPIR</h3>
-<p>TAPIR begins after your reads have been aligned, assembled, and quantified. Depending on your upstream pipeline (such as <code>oarfish</code>, <code>TALON</code>, <code>FLAIR</code>, <code>bambu</code>, or <code>IsoQuant</code>), you will typically bring three files into R:</p>
+<p><strong>Code:</strong> None to run—this chapter is all concepts, with a short preview of TAPIR’s R syntax at the end.</p>
+</div>
+</div>
+<section id="one-gene-many-transcripts" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="one-gene-many-transcripts"><span class="header-section-number">1.1</span> One gene, many transcripts</h2>
+<p>Most human genes produce more than one distinct mature RNA molecule. Rather than acting as a blueprint for a single product, a gene can generate multiple <strong>transcript isoforms</strong> that differ in several ways from end to end:</p>
+<ul>
+<li><strong>Where they start (Alternative transcription start sites, TSS):</strong> Using different promoters changes the 5′ UTR and sometimes the first coding exon, affecting when the transcript is made and how efficiently it is translated.</li>
+<li><strong>How they are spliced (Alternative splicing):</strong> Including, skipping, or trimming exons reshuffles the coding sequence, which can add or remove entire functional domains from the resulting protein.</li>
+<li><strong>Where they end (Alternative transcription end sites, TES):</strong> Cleaving and polyadenylating the RNA at different sites alters the 3′ UTR, changing where the transcript localizes in the cell and how quickly it is degraded.</li>
+</ul>
+<p>Because a single gene can mix and match these choices across thousands of bases, the identity, and resulting biological job, of an isoform depends on its <strong>complete, end-to-end combination</strong> of start site, splice junctions, and end site. Crucially, cells often shift <em>which</em> isoforms they produce during development, between tissues, or in disease without changing the gene’s total expression level at all.</p>
+</section>
+<section id="what-short-reads-can-and-cant-tell-you" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="what-short-reads-can-and-cant-tell-you"><span class="header-section-number">1.2</span> What short reads can and can’t tell you</h2>
+<p>Standard RNA-seq breaks RNA into fragments of a few hundred bases—much shorter than a typical human transcript (around 1,500–2,000 bases). Because a single short-read usually covers only one or two exons, it cannot tell you which distant exons, start sites, or end sites occurred <em>together</em> on the same molecule.</p>
+<p>As a result, most short reads are <strong>compatible with several isoforms at once</strong>. Short-read quantifiers (such as <code>Salmon</code> or <code>kallisto</code>) assign these ambiguous reads to isoforms statistically, but these estimates carry uncertainty, largely depending on the amount of exons shared between a gene’s isoforms.</p>
+<p>Short reads are still cheap, generate far more reads per sample, and excel at measuring <strong>gene-level</strong> expression and individual splice junctions. Many downstream steps in this book apply equally well to short-read transcript counts; look for the <span class="badge rounded-pill text-bg-success">Also works with short reads</span> badge.</p>
+</section>
+<section id="what-long-reads-change-and-what-they-dont" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="what-long-reads-change-and-what-they-dont"><span class="header-section-number">1.3</span> What long reads change (and what they don’t)</h2>
+<p>Long-read platforms sequence thousands of bases from a single cDNA or native RNA molecule, often capturing the <strong>entire transcript in one read</strong>. By keeping each transcript’s start site, splice junctions, and end site intact on the same read, long reads make isoform identification far more direct, uncover unannotated isoforms, and improve transcript-level quantification.</p>
+<p>The two main long-read platforms available as of 2026 differ in ways that affect upstream processing (I think we can improve, or maybe remove, this table:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">PacBio (Iso-Seq, Kinnex)</th>
+<th style="text-align: left;">Oxford Nanopore (cDNA, direct RNA)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Read accuracy</strong></td>
+<td style="text-align: left;">Very high (HiFi consensus reads)</td>
+<td style="text-align: left;">Lower historically; much improved in recent chemistries</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Throughput</strong></td>
+<td style="text-align: left;">High when concatenating molecules (Kinnex); lower for standard Iso-Seq</td>
+<td style="text-align: left;">Flexible; scales from portable (MinION) to high-throughput (PromethION)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Special features</strong></td>
+<td style="text-align: left;">Strong 5′-to-3′ full-length capture; high-confidence splice junctions</td>
+<td style="text-align: left;">Direct RNA sequencing preserves native molecules and RNA modifications</td>
+</tr>
+</tbody>
+</table>
+<p>Long reads don’t solve everything, however. There are still limitations that will appear throughout these workflows and shape how we choose to analyze the data:</p>
+<ul>
+<li><strong>Not every read is full-length.</strong> RNA degradation and incomplete reverse transcription produce reads truncated at the 5′ end, which can masquerade as shorter “novel” isoforms.</li>
+<li><strong>Quantification is still an estimate.</strong> Because truncated reads (and isoforms that differ only at their very ends) can still match multiple transcripts, quantifiers such as <code>oarfish</code> and <code>bambu</code> still assign ambiguous reads probabilistically.</li>
+<li><strong>Technical artifacts can look like biology.</strong> Internal priming of the oligo(dT) primer on A-rich stretches of RNA creates false 3′ ends, and small alignment errors near splice sites create false junctions. Structural QC tools like <code>SQANTI3</code> are essential for flagging these.</li>
+<li><strong>Fewer reads per sample.</strong> Long-read runs typically yield fewer total reads than short-read runs, reducing statistical power for lowly expressed genes and rare isoforms.</li>
+</ul>
+</section>
+<section id="where-tapir-fits-in-current-analysis-pipelines" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="where-tapir-fits-in-current-analysis-pipelines"><span class="header-section-number">1.4</span> Where TAPIR fits in current analysis pipelines</h2>
+<p>A long-read transcriptomics project has two phases. The first phase consists of turning raw reads into a transcript catalog and a count matrix. This typically is done via command line tools, and good pipelines are already in place for this (point to?). <strong>TAPIR focuses on the second phase</strong>: the statistical analysis and biological interpretation you do in R (or Python!) once you have transcript counts.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Stage</th>
+<th style="text-align: left;">What happens</th>
+<th style="text-align: left;">Example tools</th>
+<th style="text-align: left;">What you get</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1. Alignment</td>
+<td style="text-align: left;">Reads are mapped to the genome (or directly to a transcriptome)</td>
+<td style="text-align: left;"><code>minimap2</code></td>
+<td style="text-align: left;">BAM files</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2. Isoform discovery <em>(optional)</em></td>
+<td style="text-align: left;">Novel isoforms are identified from genome alignments alongside known ones</td>
+<td style="text-align: left;"><code>bambu</code>, <code>IsoQuant</code>, <code>FLAIR</code>, <code>TALON</code></td>
+<td style="text-align: left;">A GTF of known + novel transcripts</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3. Quantification</td>
+<td style="text-align: left;">Reads are assigned to transcripts</td>
+<td style="text-align: left;"><code>oarfish</code>, <code>bambu</code>, <code>IsoQuant</code></td>
+<td style="text-align: left;">A transcript × sample count matrix</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4. Structural QC</td>
+<td style="text-align: left;">Discovered transcripts are classified against the reference</td>
+<td style="text-align: left;"><code>SQANTI3</code></td>
+<td style="text-align: left;">A transcript classification table</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>5. Analysis in R</strong></td>
+<td style="text-align: left;"><strong>Exploration, testing, and biological interpretation</strong></td>
+<td style="text-align: left;"><strong>TAPIR workflows</strong></td>
+<td style="text-align: left;"><strong>Figures, tables, and biological insight</strong></td>
+</tr>
+</tbody>
+</table>
+<section id="what-youll-bring-into-r-this-section-feels-misplaced-maybe-misnamed" class="level3" data-number="1.4.1">
+<h3 data-number="1.4.1" class="anchored" data-anchor-id="what-youll-bring-into-r-this-section-feels-misplaced-maybe-misnamed"><span class="header-section-number">1.4.1</span> What you’ll bring into R (This section feels misplaced, maybe misnamed)</h3>
+<p>Most workflows in this book start from three inputs:</p>
 <ol type="1">
-<li><strong>A transcript-level count matrix</strong> (rows as discovered/annotated isoforms, columns as samples).</li>
-<li><strong>A sample metadata table</strong> describing experimental conditions, batches, and sequencing depth.</li>
-<li><strong>A transcriptome annotation (<code>.gtf</code> / <code>.gff</code> or <code>SQANTI3</code> classification table)</strong> defining the exon-intron coordinates of both reference (e.g., GENCODE) and newly discovered isoforms, alongside structural novelty categories:
-<ul>
-<li><strong>FSM (Full Splice Match):</strong> Matches a reference transcript across all splice junctions.</li>
-<li><strong>ISM (Incomplete Splice Match):</strong> Matches consecutive splice junctions of a reference transcript but is shorter at the 5’ and/or 3’ end.</li>
-<li><strong>NIC (Novel in Catalog):</strong> Contains novel combinations of known splice donors/acceptors.</li>
-<li><strong>NNC (Novel Not in Catalog):</strong> Uses at least one novel splice donor or acceptor site.</li>
-</ul></li>
+<li><strong>A transcript-level count matrix</strong>, with transcripts as rows and samples as columns.</li>
+<li><strong>A sample table</strong> describing each sample’s condition, batch, and other covariates.</li>
+<li><strong>A transcript annotation</strong> (GTF/GFF) giving the exon coordinates of every reference and newly discovered transcript, often paired with a <strong>structural classification table</strong>.</li>
 </ol>
-<hr>
+<p>If your pipeline included isoform discovery, tools like <code>SQANTI3</code> (or <code>bambu</code> and <code>TALON</code>, which output similar labels) classify each transcript by how its splice junctions compare to the reference annotation:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Category</th>
+<th style="text-align: left;">Meaning</th>
+<th style="text-align: left;">Keep in mind</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>FSM</strong>: Full Splice Match</td>
+<td style="text-align: left;">Matches all splice junctions of a known reference transcript</td>
+<td style="text-align: left;">The highest-confidence category</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>ISM</strong>: Incomplete Splice Match</td>
+<td style="text-align: left;">Matches a consecutive subset of a known transcript’s junctions, but is shorter at the 5′ and/or 3′ end</td>
+<td style="text-align: left;">Often a 5′-truncated read artifact, though some represent real shorter isoforms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>NIC</strong>: Novel In Catalog</td>
+<td style="text-align: left;">Uses known donor and acceptor splice sites, but in a new combination</td>
+<td style="text-align: left;">Often a genuine novel isoform (e.g., a new exon-skipping event)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>NNC</strong>: Novel Not in Catalog</td>
+<td style="text-align: left;">Uses at least one donor or acceptor splice site not in the reference</td>
+<td style="text-align: left;">Inspect carefully; can be a true novel exon/site or an alignment artifact</td>
+</tr>
+</tbody>
+</table>
+<p><em>(Note: Different discovery tools sometimes use slightly different names—<code>TALON</code>, for example, calls FSMs “Known”. We point these out where relevant.)</em></p>
 </section>
 </section>
-<section id="gene-level-vs.-transcript-level-testing-dge-vs.-dtu" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="gene-level-vs.-transcript-level-testing-dge-vs.-dtu"><span class="header-section-number">1.2</span> 1.2 Gene-Level vs.&nbsp;Transcript-Level Testing (DGE vs.&nbsp;DTU)</h2>
-<p>Because a single gene can produce multiple functionally distinct isoforms, long-read data allows us to test complementary biological hypotheses (covered in <strong>Chapter 3</strong>):</p>
-<ul>
-<li><strong>Differential Gene Expression (DGE):</strong> <em>Does the overall transcriptional output of a gene change between conditions?</em> To test DGE, transcript counts are aggregated to the gene level (using <code>tximeta::summarizeToGene()</code>) and modeled with <code>DESeq2</code>.</li>
-<li><strong>Differential Transcript Usage (DTU):</strong> <em>Do the relative proportions of isoforms within a gene shift between conditions?</em> A gene can undergo a dramatic isoform switch—for instance, shifting from <span class="math inline">\(80\%\)</span> Isoform A / <span class="math inline">\(20\%\)</span> Isoform B in control samples to <span class="math inline">\(20\%\)</span> Isoform A / <span class="math inline">\(80\%\)</span> Isoform B upon treatment—even if total gene-level expression remains completely unchanged. We model DTU using <code>satuRn</code>.</li>
-</ul>
+<section id="four-questions-you-can-ask" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="four-questions-you-can-ask"><span class="header-section-number">1.5</span> Four questions you can ask</h2>
+<p>Once you have transcript-level counts in hand, there are several different questions you can ask:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Question</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Unit of test</th>
+<th style="text-align: left;">Example tools</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Does the gene’s <strong>total</strong> output change?</td>
+<td style="text-align: left;">Differential gene expression (<strong>DGE</strong>)</td>
+<td style="text-align: left;">Gene</td>
+<td style="text-align: left;"><code>DESeq2</code>, <code>edgeR</code>, <code>limma</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Does the <strong>absolute abundance</strong> of an individual transcript change?</td>
+<td style="text-align: left;">Differential transcript expression (<strong>DTE</strong>)</td>
+<td style="text-align: left;">Transcript</td>
+<td style="text-align: left;"><code>DESeq2</code>, <code>edgeR</code>, <code>fishpond</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Does the <strong>relative mix</strong> of a gene’s isoforms change?</td>
+<td style="text-align: left;">Differential transcript usage (<strong>DTU</strong>)</td>
+<td style="text-align: left;">Transcript proportion within its gene</td>
+<td style="text-align: left;"><code>satuRn</code>, <code>DRIMSeq</code>, <code>DEXSeq</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>What structural features</strong> separate the isoforms that increase from those that decrease?</td>
+<td style="text-align: left;">Splicing / event annotation</td>
+<td style="text-align: left;">Exon / splice site / UTR</td>
+<td style="text-align: left;"><code>splicelogic</code></td>
+</tr>
+</tbody>
+</table>
+<p>Notice the difference between the middle two rows. <strong>DTE</strong> asks whether a transcript’s overall abundance changed, which could simply reflect the whole gene turning up or down. <strong>DTU</strong>, asks whether the <em>proportions</em> of a gene’s isoforms shifted relative to one another.</p>
+<p>DTU is where long reads truly shine. Imagine a gene whose total expression stays completely flat between conditions, but whose dominant isoform flips from Isoform A (80% → 20%) to Isoform B (20% → 80%) after treatment. A gene-level DGE test will miss this completely, whereas a DTU test is built to catch it. Once you find a switch like this, the natural fourth question is <em>what</em> changed structurally between Isoform A and Isoform B—which exon was skipped, or which UTR lengthened—and what regulates that switch. <code>Splicelogic</code>, and other tools included here, can help interrogate these structural changes.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Why DTU Requires Specialized Pre-filtering
+Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In long-read datasets, tens of thousands of low-abundance or single-isoform transcripts are often detected. Before fitting DTU models, we must remove genes that only express a single isoform (as usage proportions cannot shift if only one isoform exists) and filter out lowly expressed transcripts to preserve statistical power.</p>
+<p><strong>Why DTU needs extra filtering.</strong> Long-read datasets often contain many lowly expressed transcripts and many genes with only one detected isoform. A gene with one isoform can’t change its isoform mix, and very rare transcripts add noise without adding power. DTU workflows therefore remove single-isoform genes and low-count transcripts before testing.</p>
 </div>
 </div>
-<hr>
 </section>
-<section id="the-data-grammar-of-tapir" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="the-data-grammar-of-tapir"><span class="header-section-number">1.3</span> 1.3 The Data Grammar of TAPIR</h2>
-<p>A central goal of TAPIR is to make multi-layered genomic data easy to read, write, and debug. Throughout this book, we rely on two complementary tidy Bioconductor frameworks:</p>
-<section id="manipulating-expression-containers-with-plyxp" class="level3" data-number="1.3.1">
-<h3 data-number="1.3.1" class="anchored" data-anchor-id="manipulating-expression-containers-with-plyxp"><span class="header-section-number">1.3.1</span> 1. Manipulating Expression Containers with <code>plyxp</code></h3>
-<p>In Bioconductor, transcript quantifications are stored in a <code>SummarizedExperiment</code> object, which links one or more <strong>assays</strong> (e.g., <code>counts</code>, <code>abundance</code>, <code>iso_prop</code>) with feature metadata (<strong><code>rowData</code></strong>, describing transcripts and genes) and sample metadata (<strong><code>colData</code></strong>, describing experimental groups).</p>
-<p>Wrapping a <code>SummarizedExperiment</code> with <code>new_plyxp()</code> allows you to use familiar <code>dplyr</code> verbs directly on the object via contextual scoping functions (<code>rows()</code> and <code>cols()</code>) without manual matrix transpositions:</p>
-<p>```{r} #| eval: false</p>
-<p>library(plyxp) library(SummarizedExperiment)</p>
+<section id="tapirs-modular-toolkit" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="tapirs-modular-toolkit"><span class="header-section-number">1.6</span> TAPIR’s Modular Toolkit</h2>
+<p>Throughout the book, standard Bioconductor statistical packages (<code>DESeq2</code>, <code>satuRn</code>, <code>limma</code>) are tied together by two packages designed to make transcript-level data easier to wrangle and interpret. The workflows cover both in depth, but here is a quick preview.</p>
+<p>First, <strong><code>plyxp</code></strong> lets you manipulate a <code>SummarizedExperiment</code> using familiar <code>dplyr</code> verbs. For example, computing each transcript’s share of its parent gene’s expression across every sample takes just a few lines:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plyxp)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>xp <span class="ot">&lt;-</span> <span class="fu">new_plyxp</span>(se) <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="fu">rows</span>(gene_id)) <span class="sc">|&gt;</span>                       <span class="co"># group transcripts by parent gene</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">iso_prop =</span> <span class="fu">proportions</span>(counts, <span class="dv">2</span>)) <span class="sc">|&gt;</span>     <span class="co"># within each gene &amp; sample, proportions sum to 1</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Second, once you have identified transcripts that change (from a DTU or DTE test), a list of transcript IDs like <code>ENST00000456328</code> doesn’t immediately tell you <em>what happened biologically</em>. <strong><code>splicelogic</code></strong> compares the exon coordinates of your changing transcripts and pinpoints the exact structural events, such as skipped exons, retained introns, alternative splice sites, or alternative TSS/TES, that separate them:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(splicelogic)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>exons <span class="ot">&lt;-</span> <span class="fu">prepare_exons</span>(txdb, dtu_results, <span class="at">coef_col =</span> <span class="st">"estimate"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">preprocess</span>(<span class="at">coef_col =</span> <span class="st">"estimate"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>events <span class="ot">&lt;-</span> exons <span class="sc">|&gt;</span> <span class="fu">find_all_events</span>()   <span class="co"># skipped exons, retained introns, alt. 5'/3' sites, alt. TSS/TES</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Because <code>splicelogic</code> returns standard <code>GRanges</code> objects, its output plugs straight into <code>plyranges</code> and <code>Biostrings</code>, making it straightforward to ask downstream questions like whether RNA-binding protein motifs are enriched near your regulated exons.</p>
 </section>
-</section>
-<section id="wrap-a-summarizedexperiment-object" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Wrap a SummarizedExperiment object</h1>
-<p>xp &lt;- se |&gt; new_plyxp()</p>
-</section>
-<section id="group-by-gene_id-across-rows-to-compute-per-sample-isoform-proportions-natively" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> 1. Group by gene_id across rows to compute per-sample isoform proportions natively</h1>
-<p>xp &lt;- xp |&gt; group_by(rows(gene_id)) |&gt; mutate(iso_prop = counts / sum(counts)) |&gt; ungroup()</p>
-</section>
-<section id="summarize-assay-statistics-across-sample-conditions-coldata" class="level1" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> 2. Summarize assay statistics across sample conditions (colData)</h1>
-<p>iso_stats &lt;- xp |&gt; group_by(cols(condition)) |&gt; summarize( mean = rowMeans(iso_prop), sd = rowSds(iso_prop), cols(.samples = unique(condition)) )</p>
-<p>See <span class="citation" data-cites="knuth84">Knuth (<a href="references.html#ref-knuth84" role="doc-biblioref">1984</a>)</span> for additional discussion of literate programming.</p>
+<section id="where-to-go-next" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="where-to-go-next"><span class="header-section-number">1.7</span> Where to go next</h2>
+<ul>
+<li>Want to see real long-read data first? Continue to the first workflow, <a href="./eda.html">Exploring a long-read transcriptome</a>.</li>
+<li>Already have counts and a question in mind? Jump to the matching workflow in the <a href="./index.html#workflows-at-a-glance">table on the home page</a>.</li>
+</ul>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
-<div id="ref-knuth84" class="csl-entry" role="listitem">
-Knuth, Donald E. 1984. <span>“Literate Programming.”</span> <em>Comput. J.</em> (USA) 27 (2): 97–111. <a href="https://doi.org/10.1093/comjnl/27.2.97">https://doi.org/10.1093/comjnl/27.2.97</a>.
-</div>
-</div>
 </section>
 
 </main> <!-- /main -->

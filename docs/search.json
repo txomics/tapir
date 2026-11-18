@@ -72,45 +72,89 @@
   {
     "objectID": "intro.html",
     "href": "intro.html",
-    "title": "1  Introduction",
+    "title": "1  Why long reads?",
     "section": "",
-    "text": "1.1 1.1 Where TAPIR Fits in the Long-Read Lifecycle\nThis is a book created from markdown and executable code.\nThis will contain more conceptual information pertaining to these types of analyses and establishing a common language/goal\n```markdown # Introduction\nLong-read RNA sequencing platforms—such as Pacific Biosciences (PacBio Iso-Seq and Kinnex) and Oxford Nanopore Technologies (ONT)—have transformed transcriptomics by capturing full-length RNA and cDNA molecules in single reads. Unlike short-read sequencing, which must probabilistically infer exon connectivity across fragmented reads, long-read sequencing directly resolves complete splice-junction chains, alternative transcription start and end sites (TSS/TES), and novel transcript isoforms.\nHowever, moving from raw long-read quantifications to biological insight introduces unique data-wrangling and statistical hurdles. TAPIR is designed to bridge the gap between upstream isoform quantification and downstream functional interpretation in R.",
+    "text": "1.1 One gene, many transcripts\nMost human genes produce more than one distinct mature RNA molecule. Rather than acting as a blueprint for a single product, a gene can generate multiple transcript isoforms that differ in several ways from end to end:\nBecause a single gene can mix and match these choices across thousands of bases, the identity, and resulting biological job, of an isoform depends on its complete, end-to-end combination of start site, splice junctions, and end site. Crucially, cells often shift which isoforms they produce during development, between tissues, or in disease without changing the gene’s total expression level at all.",
     "crumbs": [
       "Foundations",
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
     ]
   },
   {
-    "objectID": "intro.html#where-tapir-fits-in-the-long-read-lifecycle",
-    "href": "intro.html#where-tapir-fits-in-the-long-read-lifecycle",
-    "title": "1  Introduction",
+    "objectID": "intro.html#one-gene-many-transcripts",
+    "href": "intro.html#one-gene-many-transcripts",
+    "title": "1  Why long reads?",
     "section": "",
-    "text": "1.1.1 Upstream Inputs Expected by TAPIR\nTAPIR begins after your reads have been aligned, assembled, and quantified. Depending on your upstream pipeline (such as oarfish, TALON, FLAIR, bambu, or IsoQuant), you will typically bring three files into R:\n\nA transcript-level count matrix (rows as discovered/annotated isoforms, columns as samples).\nA sample metadata table describing experimental conditions, batches, and sequencing depth.\nA transcriptome annotation (.gtf / .gff or SQANTI3 classification table) defining the exon-intron coordinates of both reference (e.g., GENCODE) and newly discovered isoforms, alongside structural novelty categories:\n\nFSM (Full Splice Match): Matches a reference transcript across all splice junctions.\nISM (Incomplete Splice Match): Matches consecutive splice junctions of a reference transcript but is shorter at the 5’ and/or 3’ end.\nNIC (Novel in Catalog): Contains novel combinations of known splice donors/acceptors.\nNNC (Novel Not in Catalog): Uses at least one novel splice donor or acceptor site.",
+    "text": "Where they start (Alternative transcription start sites, TSS): Using different promoters changes the 5′ UTR and sometimes the first coding exon, affecting when the transcript is made and how efficiently it is translated.\nHow they are spliced (Alternative splicing): Including, skipping, or trimming exons reshuffles the coding sequence, which can add or remove entire functional domains from the resulting protein.\nWhere they end (Alternative transcription end sites, TES): Cleaving and polyadenylating the RNA at different sites alters the 3′ UTR, changing where the transcript localizes in the cell and how quickly it is degraded.",
     "crumbs": [
       "Foundations",
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
     ]
   },
   {
-    "objectID": "intro.html#gene-level-vs.-transcript-level-testing-dge-vs.-dtu",
-    "href": "intro.html#gene-level-vs.-transcript-level-testing-dge-vs.-dtu",
-    "title": "1  Introduction",
-    "section": "1.2 1.2 Gene-Level vs. Transcript-Level Testing (DGE vs. DTU)",
-    "text": "1.2 1.2 Gene-Level vs. Transcript-Level Testing (DGE vs. DTU)\nBecause a single gene can produce multiple functionally distinct isoforms, long-read data allows us to test complementary biological hypotheses (covered in Chapter 3):\n\nDifferential Gene Expression (DGE): Does the overall transcriptional output of a gene change between conditions? To test DGE, transcript counts are aggregated to the gene level (using tximeta::summarizeToGene()) and modeled with DESeq2.\nDifferential Transcript Usage (DTU): Do the relative proportions of isoforms within a gene shift between conditions? A gene can undergo a dramatic isoform switch—for instance, shifting from \\(80\\%\\) Isoform A / \\(20\\%\\) Isoform B in control samples to \\(20\\%\\) Isoform A / \\(80\\%\\) Isoform B upon treatment—even if total gene-level expression remains completely unchanged. We model DTU using satuRn.\n\n\n\n\n\n\n\nTipWhy DTU Requires Specialized Pre-filtering\n\n\n\nIn long-read datasets, tens of thousands of low-abundance or single-isoform transcripts are often detected. Before fitting DTU models, we must remove genes that only express a single isoform (as usage proportions cannot shift if only one isoform exists) and filter out lowly expressed transcripts to preserve statistical power.",
+    "objectID": "intro.html#what-short-reads-can-and-cant-tell-you",
+    "href": "intro.html#what-short-reads-can-and-cant-tell-you",
+    "title": "1  Why long reads?",
+    "section": "1.2 What short reads can and can’t tell you",
+    "text": "1.2 What short reads can and can’t tell you\nStandard RNA-seq breaks RNA into fragments of a few hundred bases—much shorter than a typical human transcript (around 1,500–2,000 bases). Because a single short-read usually covers only one or two exons, it cannot tell you which distant exons, start sites, or end sites occurred together on the same molecule.\nAs a result, most short reads are compatible with several isoforms at once. Short-read quantifiers (such as Salmon or kallisto) assign these ambiguous reads to isoforms statistically, but these estimates carry uncertainty, largely depending on the amount of exons shared between a gene’s isoforms.\nShort reads are still cheap, generate far more reads per sample, and excel at measuring gene-level expression and individual splice junctions. Many downstream steps in this book apply equally well to short-read transcript counts; look for the Also works with short reads badge.",
     "crumbs": [
       "Foundations",
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
     ]
   },
   {
-    "objectID": "intro.html#the-data-grammar-of-tapir",
-    "href": "intro.html#the-data-grammar-of-tapir",
-    "title": "1  Introduction",
-    "section": "1.3 1.3 The Data Grammar of TAPIR",
-    "text": "1.3 1.3 The Data Grammar of TAPIR\nA central goal of TAPIR is to make multi-layered genomic data easy to read, write, and debug. Throughout this book, we rely on two complementary tidy Bioconductor frameworks:\n\n1.3.1 1. Manipulating Expression Containers with plyxp\nIn Bioconductor, transcript quantifications are stored in a SummarizedExperiment object, which links one or more assays (e.g., counts, abundance, iso_prop) with feature metadata (rowData, describing transcripts and genes) and sample metadata (colData, describing experimental groups).\nWrapping a SummarizedExperiment with new_plyxp() allows you to use familiar dplyr verbs directly on the object via contextual scoping functions (rows() and cols()) without manual matrix transpositions:\n```{r} #| eval: false\nlibrary(plyxp) library(SummarizedExperiment)",
+    "objectID": "intro.html#what-long-reads-change-and-what-they-dont",
+    "href": "intro.html#what-long-reads-change-and-what-they-dont",
+    "title": "1  Why long reads?",
+    "section": "1.3 What long reads change (and what they don’t)",
+    "text": "1.3 What long reads change (and what they don’t)\nLong-read platforms sequence thousands of bases from a single cDNA or native RNA molecule, often capturing the entire transcript in one read. By keeping each transcript’s start site, splice junctions, and end site intact on the same read, long reads make isoform identification far more direct, uncover unannotated isoforms, and improve transcript-level quantification.\nThe two main long-read platforms available as of 2026 differ in ways that affect upstream processing (I think we can improve, or maybe remove, this table:\n\n\n\n\n\n\n\n\n\nPacBio (Iso-Seq, Kinnex)\nOxford Nanopore (cDNA, direct RNA)\n\n\n\n\nRead accuracy\nVery high (HiFi consensus reads)\nLower historically; much improved in recent chemistries\n\n\nThroughput\nHigh when concatenating molecules (Kinnex); lower for standard Iso-Seq\nFlexible; scales from portable (MinION) to high-throughput (PromethION)\n\n\nSpecial features\nStrong 5′-to-3′ full-length capture; high-confidence splice junctions\nDirect RNA sequencing preserves native molecules and RNA modifications\n\n\n\nLong reads don’t solve everything, however. There are still limitations that will appear throughout these workflows and shape how we choose to analyze the data:\n\nNot every read is full-length. RNA degradation and incomplete reverse transcription produce reads truncated at the 5′ end, which can masquerade as shorter “novel” isoforms.\nQuantification is still an estimate. Because truncated reads (and isoforms that differ only at their very ends) can still match multiple transcripts, quantifiers such as oarfish and bambu still assign ambiguous reads probabilistically.\nTechnical artifacts can look like biology. Internal priming of the oligo(dT) primer on A-rich stretches of RNA creates false 3′ ends, and small alignment errors near splice sites create false junctions. Structural QC tools like SQANTI3 are essential for flagging these.\nFewer reads per sample. Long-read runs typically yield fewer total reads than short-read runs, reducing statistical power for lowly expressed genes and rare isoforms.",
     "crumbs": [
       "Foundations",
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html#where-tapir-fits-in-current-analysis-pipelines",
+    "href": "intro.html#where-tapir-fits-in-current-analysis-pipelines",
+    "title": "1  Why long reads?",
+    "section": "1.4 Where TAPIR fits in current analysis pipelines",
+    "text": "1.4 Where TAPIR fits in current analysis pipelines\nA long-read transcriptomics project has two phases. The first phase consists of turning raw reads into a transcript catalog and a count matrix. This typically is done via command line tools, and good pipelines are already in place for this (point to?). TAPIR focuses on the second phase: the statistical analysis and biological interpretation you do in R (or Python!) once you have transcript counts.\n\n\n\n\n\n\n\n\n\nStage\nWhat happens\nExample tools\nWhat you get\n\n\n\n\n1. Alignment\nReads are mapped to the genome (or directly to a transcriptome)\nminimap2\nBAM files\n\n\n2. Isoform discovery (optional)\nNovel isoforms are identified from genome alignments alongside known ones\nbambu, IsoQuant, FLAIR, TALON\nA GTF of known + novel transcripts\n\n\n3. Quantification\nReads are assigned to transcripts\noarfish, bambu, IsoQuant\nA transcript × sample count matrix\n\n\n4. Structural QC\nDiscovered transcripts are classified against the reference\nSQANTI3\nA transcript classification table\n\n\n5. Analysis in R\nExploration, testing, and biological interpretation\nTAPIR workflows\nFigures, tables, and biological insight\n\n\n\n\n1.4.1 What you’ll bring into R (This section feels misplaced, maybe misnamed)\nMost workflows in this book start from three inputs:\n\nA transcript-level count matrix, with transcripts as rows and samples as columns.\nA sample table describing each sample’s condition, batch, and other covariates.\nA transcript annotation (GTF/GFF) giving the exon coordinates of every reference and newly discovered transcript, often paired with a structural classification table.\n\nIf your pipeline included isoform discovery, tools like SQANTI3 (or bambu and TALON, which output similar labels) classify each transcript by how its splice junctions compare to the reference annotation:\n\n\n\n\n\n\n\n\nCategory\nMeaning\nKeep in mind\n\n\n\n\nFSM: Full Splice Match\nMatches all splice junctions of a known reference transcript\nThe highest-confidence category\n\n\nISM: Incomplete Splice Match\nMatches a consecutive subset of a known transcript’s junctions, but is shorter at the 5′ and/or 3′ end\nOften a 5′-truncated read artifact, though some represent real shorter isoforms\n\n\nNIC: Novel In Catalog\nUses known donor and acceptor splice sites, but in a new combination\nOften a genuine novel isoform (e.g., a new exon-skipping event)\n\n\nNNC: Novel Not in Catalog\nUses at least one donor or acceptor splice site not in the reference\nInspect carefully; can be a true novel exon/site or an alignment artifact\n\n\n\n(Note: Different discovery tools sometimes use slightly different names—TALON, for example, calls FSMs “Known”. We point these out where relevant.)",
+    "crumbs": [
+      "Foundations",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html#four-questions-you-can-ask",
+    "href": "intro.html#four-questions-you-can-ask",
+    "title": "1  Why long reads?",
+    "section": "1.5 Four questions you can ask",
+    "text": "1.5 Four questions you can ask\nOnce you have transcript-level counts in hand, there are several different questions you can ask:\n\n\n\n\n\n\n\n\n\nQuestion\nName\nUnit of test\nExample tools\n\n\n\n\nDoes the gene’s total output change?\nDifferential gene expression (DGE)\nGene\nDESeq2, edgeR, limma\n\n\nDoes the absolute abundance of an individual transcript change?\nDifferential transcript expression (DTE)\nTranscript\nDESeq2, edgeR, fishpond\n\n\nDoes the relative mix of a gene’s isoforms change?\nDifferential transcript usage (DTU)\nTranscript proportion within its gene\nsatuRn, DRIMSeq, DEXSeq\n\n\nWhat structural features separate the isoforms that increase from those that decrease?\nSplicing / event annotation\nExon / splice site / UTR\nsplicelogic\n\n\n\nNotice the difference between the middle two rows. DTE asks whether a transcript’s overall abundance changed, which could simply reflect the whole gene turning up or down. DTU, asks whether the proportions of a gene’s isoforms shifted relative to one another.\nDTU is where long reads truly shine. Imagine a gene whose total expression stays completely flat between conditions, but whose dominant isoform flips from Isoform A (80% → 20%) to Isoform B (20% → 80%) after treatment. A gene-level DGE test will miss this completely, whereas a DTU test is built to catch it. Once you find a switch like this, the natural fourth question is what changed structurally between Isoform A and Isoform B—which exon was skipped, or which UTR lengthened—and what regulates that switch. Splicelogic, and other tools included here, can help interrogate these structural changes.\n\n\n\n\n\n\nTip\n\n\n\nWhy DTU needs extra filtering. Long-read datasets often contain many lowly expressed transcripts and many genes with only one detected isoform. A gene with one isoform can’t change its isoform mix, and very rare transcripts add noise without adding power. DTU workflows therefore remove single-isoform genes and low-count transcripts before testing.",
+    "crumbs": [
+      "Foundations",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html#tapirs-modular-toolkit",
+    "href": "intro.html#tapirs-modular-toolkit",
+    "title": "1  Why long reads?",
+    "section": "1.6 TAPIR’s Modular Toolkit",
+    "text": "1.6 TAPIR’s Modular Toolkit\nThroughout the book, standard Bioconductor statistical packages (DESeq2, satuRn, limma) are tied together by two packages designed to make transcript-level data easier to wrangle and interpret. The workflows cover both in depth, but here is a quick preview.\nFirst, plyxp lets you manipulate a SummarizedExperiment using familiar dplyr verbs. For example, computing each transcript’s share of its parent gene’s expression across every sample takes just a few lines:\nlibrary(plyxp)\n\nxp &lt;- new_plyxp(se) |&gt;\n  group_by(rows(gene_id)) |&gt;                       # group transcripts by parent gene\n  mutate(iso_prop = proportions(counts, 2)) |&gt;     # within each gene & sample, proportions sum to 1\n  ungroup()\nSecond, once you have identified transcripts that change (from a DTU or DTE test), a list of transcript IDs like ENST00000456328 doesn’t immediately tell you what happened biologically. splicelogic compares the exon coordinates of your changing transcripts and pinpoints the exact structural events, such as skipped exons, retained introns, alternative splice sites, or alternative TSS/TES, that separate them:\nlibrary(splicelogic)\n\nexons &lt;- prepare_exons(txdb, dtu_results, coef_col = \"estimate\") |&gt;\n  preprocess(coef_col = \"estimate\")\n\nevents &lt;- exons |&gt; find_all_events()   # skipped exons, retained introns, alt. 5'/3' sites, alt. TSS/TES\nBecause splicelogic returns standard GRanges objects, its output plugs straight into plyranges and Biostrings, making it straightforward to ask downstream questions like whether RNA-binding protein motifs are enriched near your regulated exons.",
+    "crumbs": [
+      "Foundations",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
+    ]
+  },
+  {
+    "objectID": "intro.html#where-to-go-next",
+    "href": "intro.html#where-to-go-next",
+    "title": "1  Why long reads?",
+    "section": "1.7 Where to go next",
+    "text": "1.7 Where to go next\n\nWant to see real long-read data first? Continue to the first workflow, Exploring a long-read transcriptome.\nAlready have counts and a question in mind? Jump to the matching workflow in the table on the home page.",
+    "crumbs": [
+      "Foundations",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Why long reads?</span>"
     ]
   },
   {
@@ -232,16 +276,6 @@
     "crumbs": [
       "Workflows",
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Post DTU Analysis</span>"
-    ]
-  },
-  {
-    "objectID": "references.html",
-    "href": "references.html",
-    "title": "References",
-    "section": "",
-    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. (USA) 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
-    "crumbs": [
-      "References"
     ]
   }
 ]
